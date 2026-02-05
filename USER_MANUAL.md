@@ -39,22 +39,22 @@ Airdrop Tracker is a web-based application designed to help you organize, manage
 The top section contains all primary controls:
 
 - **Search Bar** – Find airdrops by name or code (live search)
-- **Filter Dropdowns** – Quick filters for Task, Task Type, and Status
+- **Filter Dropdowns** – Quick filters for Task Type, Connect Type, and Status
 - **Remove Filters Button** (×) – Clears all active filters instantly
 - **Add Airdrop Button** – Opens form to add new airdrop
 - **Manage Options Button** (⚙️) – Customize dropdown options
 - **Delete All Button** (🗑️) – Deletes all airdrops (with confirmation)
-- **Export/Import Buttons** – Backup and restore your data
+- **Export/Import Buttons** – Backup and restore your data (includes custom select options)
 - **Tabs** – Switch between "All" and "New Tasks" views
 - **Pagination** – Navigate between pages
 
 ### Main Table
 Displays all airdrops in a detailed table with columns:
 - **Name** – Airdrop project name with star icon for favorites
-- **Task** – Task type badge (Daily, Quest, etc.)
-- **Description** – Task details (type, cost, time)
+- **Task Type** – Task badge (Daily, Time based, Quest, Whitelist, Retro, Galxe)
+- **Connect Type** – Connect method or platform (EVM, Gmail, Google, SOL, Discord, X)
 - **Updated Status** – Current status and date
-- **Reward Type** – Airdrop or Ambassador
+- **Reward Type** – Reward category (Airdrop, Ambassador, XP, Point, NFT)
 - **Raise/Funds** – Fundraising amount and investor count
 - **Actions** – Edit and Delete buttons per row
 
@@ -73,16 +73,15 @@ Displays all airdrops in a detailed table with columns:
 | **Name** | Text (Required) | Airdrop project name (e.g., "Infinex") |
 | **Code** | Text (Optional) | Ticker/code (e.g., "INX") |
 | **Link** | URL (Optional) | Project website or airdrop page |
-| **Task** | Dropdown | Task type (Daily, Time based, Quest, Whitelist) |
+| **Task Type** | Dropdown | Task category (Daily, Time based, Quest, Whitelist, Retro, Galxe) |
 | **No Active Tasks** | Checkbox | Check if project has no ongoing tasks |
 | **New Badge** | Checkbox | Mark as newly added |
-| **Task Type** | Dropdown | Category (Getting a role, Ambassador, Mainnet, etc.) |
+| **Connect Type** | Dropdown | How users connect/interact (EVM, Gmail, Google, SOL, Discord, X) |
 | **Cost ($)** | Number | How much the task costs in USD |
 | **Time (min)** | Number | How long the task takes (minutes) |
-| **Task Description** | Text | Details of the task |
 | **Status** | Dropdown | Reward Available, Potential, or Confirmed |
 | **Status Date** | Text | When the status was updated (e.g., "31 Jan 2026") |
-| **Reward Type** | Dropdown | Airdrop or Ambassador |
+| **Reward Type** | Dropdown | Airdrop, Ambassador, or special reward types (XP, Point, NFT) |
 | **Raise Amount** | Text | Fundraising amount (e.g., "72.49M") |
 | **Raise Count** | Number | Number of investors |
 

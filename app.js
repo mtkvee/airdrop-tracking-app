@@ -32,11 +32,10 @@
         logo: p.logo || null,
         initial: (p.name && p.name.charAt(0)) ? p.name.charAt(0).toUpperCase() : '?',
         favorite: !!p.favorite,
-        task: p.task || null,
-        taskType: p.taskType || null,
+        taskType: p.taskType || p.task || null,
+        connectType: p.connectType || p.taskType || null,
         taskCost: p.taskCost != null ? p.taskCost : null,
         taskTime: p.taskTime != null ? p.taskTime : null,
-        taskDesc: p.taskDesc || null,
         noActiveTasks: !!p.noActiveTasks,
         isNew: !!p.isNew,
         status: p.status || 'potential',
@@ -129,13 +128,12 @@
       name: p.name,
       code: p.code,
       link: p.link || '',
-      task: p.task || '',
+      taskType: p.taskType || '',
       noActiveTasks: p.noActiveTasks,
       isNew: p.isNew,
-      taskType: p.taskType || '',
+      connectType: p.connectType || '',
       taskCost: p.taskCost != null ? p.taskCost : '',
       taskTime: p.taskTime != null ? p.taskTime : '',
-      taskDesc: p.taskDesc || '',
       status: p.status || 'potential',
       statusDate: p.statusDate || '',
       rewardType: p.rewardType || 'Airdrop',
@@ -158,11 +156,10 @@
       logo: null,
       initial: initial,
       favorite: existingId ? (PROJECTS.find(function (p) { return p.id === existingId; }) || {}).favorite : false,
-      task: data.task || null,
       taskType: data.taskType || null,
+      connectType: data.connectType || null,
       taskCost: data.taskCost !== '' && data.taskCost != null ? Number(data.taskCost) : null,
       taskTime: data.taskTime !== '' && data.taskTime != null ? Number(data.taskTime) : null,
-      taskDesc: (data.taskDesc || '').trim() || 'Lorem ipsum dolor sit, amet consectetur adipisicing.',
       noActiveTasks: noActive,
       isNew: !!data.isNew,
       status: data.status || 'potential',
@@ -225,7 +222,8 @@
 
   function renderProjectRow(p) {
     const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.potential;
-    const taskDisplay = p.task ? p.task.charAt(0).toUpperCase() + p.task.slice(1) : '—';
+    const taskTypeDisplay = p.taskType ? p.taskType.charAt(0).toUpperCase() + p.taskType.slice(1) : '—';
+    const connectTypeDisplay = p.connectType ? p.connectType.charAt(0).toUpperCase() + p.connectType.slice(1) : '—';
     const taskCellContent = p.noActiveTasks
       ? `<span class="no-tasks">No active tasks</span>`
       : `
@@ -233,7 +231,7 @@
           <span class="cost">Cost: $${p.taskCost}</span>
           <span class="time">Time: ${p.taskTime} min</span>
         </span>
-        <span class="task-desc">${p.taskDesc}</span>
+        <span class="task-desc">${connectTypeDisplay}</span>
       `;
     const raiseCell = p.raise
       ? `
@@ -265,7 +263,7 @@
         </td>
         <td class="col-task">
           <div class="cell-task">
-            <span class="task-badge">${taskDisplay}</span>
+            <span class="task-badge">${taskTypeDisplay}</span>
           </div>
         </td>
         <td class="col-tasktype">
@@ -291,8 +289,8 @@
 
   function applyFiltersFromState() {
     const search = ($searchInput && $searchInput.value || '').trim().toLowerCase();
-    const task = $taskFilter && $taskFilter.value || '';
-    const taskType = $taskTypeFilter && $taskTypeFilter.value || '';
+    const taskType = $taskFilter && $taskFilter.value || '';
+    const connectType = $taskTypeFilter && $taskTypeFilter.value || '';
     const status = $statusFilter && $statusFilter.value || '';
 
     filteredProjects = PROJECTS.filter(function (p) {
@@ -300,16 +298,16 @@
         const match = (p.name + ' ' + p.code).toLowerCase().includes(search);
         if (!match) return false;
       }
-      if (task && p.task !== task) return false;
-      if (taskType && p.taskType !== taskType && !(taskType && p.noActiveTasks)) {
+      if (taskType && p.taskType !== taskType) return false;
+      if (connectType && p.connectType !== connectType && !(connectType && p.noActiveTasks)) {
         if (p.noActiveTasks) return false;
-        if (p.taskType !== taskType) return false;
+        if (p.connectType !== connectType) return false;
       }
       if (status && p.status !== status) return false;
 
-      if (modalFilters.taskType && modalFilters.taskType.length) {
+      if (modalFilters.connectType && modalFilters.connectType.length) {
         if (p.noActiveTasks) return false;
-        if (!modalFilters.taskType.includes(p.taskType)) return false;
+        if (!modalFilters.connectType.includes(p.connectType)) return false;
       }
       if (modalFilters.rewardType && modalFilters.rewardType.length) {
         const r = p.rewardType.toLowerCase();
@@ -387,10 +385,10 @@
   }
 
   function syncFilterOptionsWithForm() {
-    // Sync Task options from airdropTask to taskFilter
-    const $airdropTask = document.getElementById('airdropTask');
-    if ($airdropTask && $taskFilter) {
-      const formOptions = Array.from($airdropTask.options).map(function(opt) {
+    // Sync Task Type options from airdropTaskType to taskFilter
+    const $airdropTaskType = document.getElementById('airdropTaskType');
+    if ($airdropTaskType && $taskFilter) {
+      const formOptions = Array.from($airdropTaskType.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
       });
       const currentFilterValue = $taskFilter.value;
@@ -412,12 +410,14 @@
       
       // Restore previous selection if it still exists
       $taskFilter.value = currentFilterValue;
+      // ensure header filter is alphabetically ordered
+      sortSelectElement('taskFilter');
     }
 
-    // Sync Task Type options from airdropTaskType to taskTypeFilter
-    const $airdropTaskType = document.getElementById('airdropTaskType');
-    if ($airdropTaskType && $taskTypeFilter) {
-      const formOptions = Array.from($airdropTaskType.options).map(function(opt) {
+    // Sync Connect Type options from airdropConnectType to taskTypeFilter
+    const $airdropConnectType = document.getElementById('airdropConnectType');
+    if ($airdropConnectType && $taskTypeFilter) {
+      const formOptions = Array.from($airdropConnectType.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
       });
       const currentFilterValue = $taskTypeFilter.value;
@@ -436,6 +436,7 @@
       });
       
       $taskTypeFilter.value = currentFilterValue;
+      sortSelectElement('taskTypeFilter');
     }
 
     // Sync Status options from airdropStatus to statusFilter
@@ -460,6 +461,7 @@
       });
       
       $statusFilter.value = currentFilterValue;
+      sortSelectElement('statusFilter');
     }
 
     // Sync Reward Type options from airdropRewardType (collect from actual data)
@@ -486,7 +488,11 @@
       empty.text = selectEl.getAttribute('data-empty-text') || '';
       selectEl.appendChild(empty);
     }
-    CUSTOM_OPTIONS[id].forEach(function(o) {
+    // sort custom options alphabetically by display text
+    var sorted = (CUSTOM_OPTIONS[id] || []).slice().sort(function(a,b){
+      return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' });
+    });
+    sorted.forEach(function(o) {
       const opt = document.createElement('option');
       opt.value = o.value;
       opt.text = o.text;
@@ -494,13 +500,42 @@
     });
   }
 
+  // Sort DOM select element options alphabetically (preserve empty first option if present)
+  function sortSelectElement(selectId) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return;
+    var empty = null;
+    var items = [];
+    for (var i = 0; i < sel.options.length; i++) {
+      var o = sel.options[i];
+      if (i === 0 && o.value === '') { empty = { value: o.value, text: o.text }; }
+      else items.push({ value: o.value, text: o.text });
+    }
+    items.sort(function(a, b) { return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' }); });
+    var cur = sel.value;
+    sel.innerHTML = '';
+    if (empty) {
+      var e = document.createElement('option'); e.value = empty.value; e.text = empty.text; sel.appendChild(e);
+    }
+    items.forEach(function(it) { var opt = document.createElement('option'); opt.value = it.value; opt.text = it.text; sel.appendChild(opt); });
+    // restore selection if still present
+    try { sel.value = cur; } catch (e) {}
+  }
+
+  function sortAllSelects() {
+    var ids = ['airdropTaskType','airdropConnectType','airdropRewardType','airdropStatus','taskFilter','taskTypeFilter','statusFilter','selectToManage'];
+    ids.forEach(function(id){ sortSelectElement(id); });
+  }
+
   function initCustomOptions() {
-    var ids = ['airdropTask','airdropTaskType','airdropStatus','airdropRewardType'];
+    var ids = ['airdropTaskType','airdropConnectType','airdropStatus','airdropRewardType'];
     ids.forEach(function(id) {
       if (CUSTOM_OPTIONS && CUSTOM_OPTIONS[id]) {
         applyCustomOptionsToSelect(id);
       }
     });
+    // ensure selects are sorted after applying custom options
+    sortAllSelects();
   }
 
   let manageOptionsCurrentSelect = null;
@@ -606,13 +641,12 @@
     const nameEl = document.getElementById('airdropName');
     const codeEl = document.getElementById('airdropCode');
     const linkEl = document.getElementById('airdropLink');
-    const taskEl = document.getElementById('airdropTask');
+    const taskTypeEl = document.getElementById('airdropTaskType');
     const noTasksEl = document.getElementById('airdropNoTasks');
     const isNewEl = document.getElementById('airdropIsNew');
-    const taskTypeEl = document.getElementById('airdropTaskType');
+    const connectTypeEl = document.getElementById('airdropConnectType');
     const taskCostEl = document.getElementById('airdropTaskCost');
     const taskTimeEl = document.getElementById('airdropTaskTime');
-    const taskDescEl = document.getElementById('airdropTaskDesc');
     const statusEl = document.getElementById('airdropStatus');
     const statusDateEl = document.getElementById('airdropStatusDate');
     const rewardTypeEl = document.getElementById('airdropRewardType');
@@ -624,13 +658,12 @@
       name: nameEl ? nameEl.value : '',
       code: codeEl ? codeEl.value : '',
       link: linkEl ? linkEl.value : '',
-      task: taskEl ? taskEl.value : '',
+      taskType: taskTypeEl ? taskTypeEl.value : '',
       noActiveTasks: noTasksEl ? noTasksEl.checked : false,
       isNew: isNewEl ? isNewEl.checked : false,
-      taskType: taskTypeEl ? taskTypeEl.value : '',
+      connectType: connectTypeEl ? connectTypeEl.value : '',
       taskCost: taskCostEl ? taskCostEl.value : '',
       taskTime: taskTimeEl ? taskTimeEl.value : '',
-      taskDesc: taskDescEl ? taskDescEl.value : '',
       status: statusEl ? statusEl.value : 'potential',
       statusDate: statusDateEl ? statusDateEl.value : '',
       rewardType: rewardTypeEl ? rewardTypeEl.value : 'Airdrop',
@@ -650,13 +683,12 @@
     set('airdropName', data.name);
     set('airdropCode', data.code);
     set('airdropLink', data.link);
-    set('airdropTask', data.task);
+    set('airdropTaskType', data.taskType);
     set('airdropNoTasks', data.noActiveTasks);
     set('airdropIsNew', data.isNew);
-    set('airdropTaskType', data.taskType);
+    set('airdropConnectType', data.connectType);
     set('airdropTaskCost', data.taskCost);
     set('airdropTaskTime', data.taskTime);
-    set('airdropTaskDesc', data.taskDesc);
     set('airdropStatus', data.status);
     set('airdropStatusDate', data.statusDate);
     set('airdropRewardType', data.rewardType);
@@ -670,13 +702,12 @@
       name: '',
       code: '',
       link: '',
-      task: '',
+      taskType: '',
       noActiveTasks: false,
       isNew: false,
-      taskType: '',
+      connectType: '',
       taskCost: '',
       taskTime: '',
-      taskDesc: '',
       status: 'potential',
       statusDate: '',
       rewardType: 'Airdrop',
@@ -823,7 +854,7 @@
   }
 
   function exportData() {
-    const payload = { projects: PROJECTS, exportedAt: Date.now() };
+    const payload = { projects: PROJECTS, customOptions: CUSTOM_OPTIONS || {}, exportedAt: Date.now() };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -835,8 +866,15 @@
 
   function importData(parsed) {
     const list = Array.isArray(parsed) ? parsed : (parsed && parsed.projects) ? parsed.projects : [];
+    // import custom options if present
+    if (parsed && parsed.customOptions) {
+      try { CUSTOM_OPTIONS = parsed.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
+    }
     if (!list.length) return;
     PROJECTS = normalizeProjects(list);
+    // apply custom options to selects then persist
+    initCustomOptions();
+    syncFilterOptionsWithForm();
     saveToLocalStorage();
     applyFiltersFromState();
   }
@@ -991,6 +1029,8 @@
     if (manageOptionsCurrentSelect) {
       var id = manageOptionsCurrentSelect.id;
       var arr = Array.from(manageOptionsCurrentSelect.options).filter(function(o){ return o.value !== ''; }).map(function(o){ return { value: o.value, text: o.text }; });
+      // sort new options alphabetically A→Z by display text
+      arr.sort(function(a,b){ return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' }); });
       CUSTOM_OPTIONS[id] = arr;
       saveToLocalStorage();
       syncFilterOptionsWithForm();
@@ -1023,5 +1063,7 @@
   initSort();
   initCustomOptions();
   syncFilterOptionsWithForm();
+  // ensure all selects are alphabetically ordered on startup
+  sortAllSelects();
   applyFiltersFromState();
 })();

@@ -21,8 +21,8 @@
     />
   </head>
   <body>
-    <h1>Airdrop Tracker</h1>
-    <h3>by <a href="https://github.com/mtkvee">Vee</a></h3>
+    <h1>Airdrop Tracker<span style="font-size: 0.85rem;">(v0.1)</span></h1>
+    <h3>by <a href="https://t.me/mgveec" target="_blank">Vee</a></h3>
     <div class="app">
       <!-- Top header -->
       <header class="header">
@@ -39,21 +39,22 @@
           </div>
           <div class="filter-bar">
             <select class="filter-select" id="taskFilter">
-              <option value="">Task</option>
+              <option value="">Task Type</option>
               <option value="daily">Daily</option>
               <option value="time-based">Time based</option>
               <option value="quest">Quest</option>
               <option value="whitelist">Whitelist</option>
+              <option value="retro">Retro</option>
+              <option value="galxe">Galxe</option>
             </select>
             <select class="filter-select" id="taskTypeFilter">
-              <option value="">Task Type</option>
-              <option value="role">Getting a role</option>
-              <option value="ambassador">Ambassador</option>
-              <option value="mainnet">Mainnet</option>
-              <option value="mint">Mint NFT</option>
-              <option value="trading">Trading</option>
-              <option value="social">Social</option>
-              <option value="predictions">Predictions</option>
+              <option value="">Connect Type</option>
+              <option value="evm">EVM</option>
+              <option value="gmail">Gmail</option>
+              <option value="google">Google</option>
+              <option value="sol">SOL</option>
+              <option value="discord">Discord</option>
+              <option value="x">X</option>
             </select>
             <select class="filter-select" id="statusFilter">
               <option value="">Status</option>
@@ -134,7 +135,7 @@
                 New Tasks
               </button>
             </div>
-            <div class="pagination-nav">
+            <!-- <div class="pagination-nav">
               <button
                 type="button"
                 class="nav-arrow"
@@ -154,7 +155,7 @@
             </div>
             <button type="button" class="user-icon" aria-label="User menu">
               <i class="fas fa-user-circle"></i>
-            </button>
+            </button> -->
           </div>
         </div>
       </header>
@@ -168,9 +169,9 @@
                 <th class="col-name sortable" data-sort="name">
                   Name <i class="fas fa-sort"></i>
                 </th>
-                <th class="col-task sortable" data-sort="task">Task</th>
-                <th class="col-tasktype sortable" data-sort="taskType">
-                  Description
+                <th class="col-task sortable" data-sort="task">Task Type</th>
+                <th class="col-tasktype sortable" data-sort="connectType">
+                  Connect Type
                 </th>
                 <th class="col-status sortable" data-sort="status">
                   Updated Status
@@ -195,196 +196,6 @@
           </table>
         </div>
       </main>
-    </div>
-
-    <!-- Filters modal -->
-    <div class="modal-overlay" id="filtersModal" aria-hidden="true">
-      <div class="modal" role="dialog" aria-labelledby="filtersTitle">
-        <div class="modal-header">
-          <div class="modal-title-wrap">
-            <i class="fas fa-layer-group modal-title-icon"></i>
-            <h2 id="filtersTitle" class="modal-title">Filters</h2>
-          </div>
-          <button
-            type="button"
-            class="modal-close"
-            id="modalClose"
-            aria-label="Close filters"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-tab-underline"></div>
-        <div class="modal-body">
-          <div class="filter-categories">
-            <button
-              type="button"
-              class="filter-category"
-              data-category="taskType"
-            >
-              <i class="fas fa-file-alt"></i>
-              <span>Task Type</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-taskType">
-              <label
-                ><input type="checkbox" name="ft-task" value="role" /> Getting a
-                role</label
-              >
-              <label
-                ><input type="checkbox" name="ft-task" value="ambassador" />
-                Ambassador</label
-              >
-              <label
-                ><input type="checkbox" name="ft-task" value="mainnet" />
-                Mainnet</label
-              >
-              <label
-                ><input type="checkbox" name="ft-task" value="mint" /> Mint
-                NFT</label
-              >
-              <label
-                ><input type="checkbox" name="ft-task" value="trading" />
-                Trading</label
-              >
-              <label
-                ><input type="checkbox" name="ft-task" value="social" />
-                Social</label
-              >
-            </div>
-            <button
-              type="button"
-              class="filter-category"
-              data-category="rewardType"
-            >
-              <i class="fas fa-trophy"></i>
-              <span>Reward Type</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-rewardType">
-              <label
-                ><input type="checkbox" name="ft-reward" value="airdrop" />
-                Airdrop</label
-              >
-              <label
-                ><input type="checkbox" name="ft-reward" value="ambassador" />
-                Ambassador</label
-              >
-            </div>
-            <button
-              type="button"
-              class="filter-category"
-              data-category="status"
-            >
-              <i class="fas fa-tag"></i>
-              <span>Status</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-status">
-              <label
-                ><input type="checkbox" name="ft-status" value="reward" />
-                Reward Available</label
-              >
-              <label
-                ><input type="checkbox" name="ft-status" value="potential" />
-                Potential</label
-              >
-              <label
-                ><input type="checkbox" name="ft-status" value="confirmed" />
-                Confirmed</label
-              >
-            </div>
-            <button
-              type="button"
-              class="filter-category"
-              data-category="newActivities"
-            >
-              <i class="fas fa-file-medical"></i>
-              <span>New Activities</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-newActivities">
-              <label
-                ><input type="checkbox" name="ft-new" value="yes" /> Has new
-                activities</label
-              >
-            </div>
-            <button
-              type="button"
-              class="filter-category"
-              data-category="latestUpdates"
-            >
-              <i class="fas fa-clock"></i>
-              <span>Latest Status Updates</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-latestUpdates">
-              <label
-                ><input type="checkbox" name="ft-updates" value="24h" /> Last 24
-                hours</label
-              >
-              <label
-                ><input type="checkbox" name="ft-updates" value="7d" /> Last 7
-                days</label
-              >
-              <label
-                ><input type="checkbox" name="ft-updates" value="30d" /> Last 30
-                days</label
-              >
-            </div>
-            <button
-              type="button"
-              class="filter-category"
-              data-category="category"
-            >
-              <i class="fas fa-th-large"></i>
-              <span>Category</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-category">
-              <label
-                ><input type="checkbox" name="ft-cat" value="defi" />
-                DeFi</label
-              >
-              <label
-                ><input type="checkbox" name="ft-cat" value="gaming" />
-                Gaming</label
-              >
-              <label
-                ><input type="checkbox" name="ft-cat" value="nft" /> NFT</label
-              >
-              <label
-                ><input type="checkbox" name="ft-cat" value="l2" /> L2</label
-              >
-            </div>
-            <button type="button" class="filter-category" data-category="tags">
-              <i class="fas fa-hashtag"></i>
-              <span>Tags</span>
-              <i class="fas fa-chevron-down category-arrow"></i>
-            </button>
-            <div class="filter-category-content" id="content-tags">
-              <label
-                ><input type="checkbox" name="ft-tag" value="verified" />
-                Verified</label
-              >
-              <label
-                ><input type="checkbox" name="ft-tag" value="hot" /> Hot</label
-              >
-              <label
-                ><input type="checkbox" name="ft-tag" value="new" /> New</label
-              >
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-reset" id="resetFilters">
-            Reset All Filters
-          </button>
-          <button type="button" class="btn-apply" id="applyFilters">
-            Apply
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Add/Edit Airdrop modal -->
@@ -448,13 +259,15 @@
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label for="airdropTask">Task</label>
-                <select id="airdropTask" name="task">
+                <label for="airdropTaskType">Task Type</label>
+                <select id="airdropTaskType" name="taskType">
                   <option value="">—</option>
                   <option value="daily">Daily</option>
                   <option value="time-based">Time based</option>
                   <option value="quest">Quest</option>
                   <option value="whitelist">Whitelist</option>
+                    <option value="retro">Retro</option>
+                    <option value="galxe">Galxe</option>
                 </select>
               </div>
             </div>
@@ -479,16 +292,15 @@
             <div class="form-section">Task details</div>
             <div class="form-row three-cols">
               <div class="form-group">
-                <label for="airdropTaskType">Task Type</label>
-                <select id="airdropTaskType" name="taskType">
+                <label for="airdropConnectType">Connect Type</label>
+                <select id="airdropConnectType" name="connectType">
                   <option value="">—</option>
-                  <option value="role">Getting a role</option>
-                  <option value="ambassador">Ambassador</option>
-                  <option value="mainnet">Mainnet</option>
-                  <option value="mint">Mint NFT</option>
-                  <option value="trading">Trading</option>
-                  <option value="social">Social</option>
-                  <option value="predictions">Predictions</option>
+                  <option value="evm">EVM</option>
+                  <option value="gmail">Gmail</option>
+                  <option value="google">Google</option>
+                  <option value="sol">SOL</option>
+                  <option value="discord">Discord</option>
+                  <option value="x">X</option>
                 </select>
               </div>
               <div class="form-group">
@@ -513,17 +325,7 @@
                 />
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="airdropTaskDesc">Task description</label>
-                <input
-                  type="text"
-                  id="airdropTaskDesc"
-                  name="taskDesc"
-                  placeholder="e.g. Getting a role +4"
-                />
-              </div>
-            </div>
+
             <div class="form-section">Status & reward</div>
             <div class="form-row two-cols">
               <div class="form-group">
@@ -550,6 +352,9 @@
                 <select id="airdropRewardType" name="rewardType">
                   <option value="Airdrop">Airdrop</option>
                   <option value="Ambassador">Ambassador</option>
+                  <option value="XP">XP</option>
+                  <option value="Point">Point</option>
+                  <option value="NFT">NFT</option>
                 </select>
               </div>
             </div>
@@ -603,8 +408,8 @@
                 <label for="selectToManage">Field</label>
                 <select id="selectToManage" name="selectField">
                   <option value="">—</option>
-                  <option value="airdropTask">Task</option>
                   <option value="airdropTaskType">Task Type</option>
+                  <option value="airdropConnectType">Connect Type</option>
                   <option value="airdropStatus">Status</option>
                   <option value="airdropRewardType">Reward Type</option>
                 </select>
@@ -627,6 +432,7 @@
                 <input type="text" id="newOptionText" name="newOptionText" placeholder="e.g. Quest" />
               </div>
             </div>
+            <p class="add-option-message">Fill Value & Display Text first, then click "Add Option".</p>
             <button type="button" class="btn-secondary" id="addOptionBtn">
               <i class="fas fa-plus"></i> Add Option
             </button>
