@@ -1077,7 +1077,7 @@ button {
   .right-above,
   .right-below {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 0.5rem;
     width: 100%;
   }
@@ -1085,7 +1085,7 @@ button {
   .right-below {
     flex-direction: row;
     flex-wrap: wrap;
-    align-items: center;
+    justify-content: center;
   }
 
   .user-icon {
@@ -1094,33 +1094,9 @@ button {
 
   .right-above > button,
   .right-below > button {
-    width: 100%;
-    flex: 1;
+    width: auto;
+    flex: 0 0 auto;
     justify-content: center;
-  }
-
-  /* Icon-only buttons on extra-small screens */
-  @media (max-width: 480px) {
-    .btn-add-airdrop,
-    .btn-delete-all,
-    .btn-manage-options,
-    .btn-import-export {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      border-radius: 50%;
-    }
-    .btn-add-airdrop i,
-    .btn-delete-all i,
-    .btn-manage-options i,
-    .btn-import-export i {
-      margin: 0;
-    }
-    .right-above > button,
-    .right-below > button {
-      width: auto;
-      flex: 0 0 auto;
-    }
   }
 
   .filter-bar {
