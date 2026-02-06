@@ -4,6 +4,7 @@
   const STORAGE_KEY = 'airdrop-tracker-data';
   const STORAGE_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
   let CUSTOM_OPTIONS = {};
+  let LAST_UPDATED_AT = 0; // Track when data was last updated
 
   function loadFromLocalStorage() {
     try {
@@ -12,6 +13,9 @@
       const data = JSON.parse(raw);
       if (data && data.customOptions) {
         try { CUSTOM_OPTIONS = data.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
+      }
+      if (data && data.lastUpdatedAt) {
+        LAST_UPDATED_AT = data.lastUpdatedAt;
       }
       const list = Array.isArray(data) ? data : (data.projects || []);
       const savedAt = data.savedAt || 0;
@@ -51,7 +55,7 @@
 
   function saveToLocalStorage() {
     try {
-      const payload = { projects: PROJECTS, customOptions: CUSTOM_OPTIONS, savedAt: Date.now() };
+      const payload = { projects: PROJECTS, customOptions: CUSTOM_OPTIONS, lastUpdatedAt: LAST_UPDATED_AT, savedAt: Date.now() };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {}
   }
@@ -116,6 +120,39 @@
   const $notificationMessage = document.getElementById('notificationMessage');
   const $notificationClose = document.getElementById('notificationClose');
   const $notificationOk = document.getElementById('notificationOk');
+  const $lastUpdatedTime = document.getElementById('lastUpdatedTime');
+
+  function formatRelativeTime(timestamp) {
+    if (!timestamp) return 'Never';
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return 'Just now';
+    if (minutes < 60) return minutes === 1 ? '1 minute ago' : minutes + ' minutes ago';
+    if (hours < 24) return hours === 1 ? '1 hour ago' : hours + ' hours ago';
+    if (days < 7) return days === 1 ? '1 day ago' : days + ' days ago';
+    
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+  }
+
+  function updateLastUpdatedTime() {
+    LAST_UPDATED_AT = Date.now();
+    if ($lastUpdatedTime) {
+      $lastUpdatedTime.textContent = formatRelativeTime(LAST_UPDATED_AT);
+    }
+    saveToLocalStorage();
+  }
+
+  function updateLastUpdatedDisplay() {
+    if ($lastUpdatedTime) {
+      $lastUpdatedTime.textContent = formatRelativeTime(LAST_UPDATED_AT);
+    }
+  }
 
 
   function getNextId() {
@@ -175,7 +212,7 @@
   function addProject(data) {
     const p = formDataToProject(data, null);
     PROJECTS.push(p);
-    saveToLocalStorage();
+    updateLastUpdatedTime();
     applyFiltersFromState();
   }
 
@@ -187,7 +224,7 @@
     p.favorite = existing.favorite;
     p.logos = existing.logos;
     PROJECTS[idx] = p;
-    saveToLocalStorage();
+    updateLastUpdatedTime();
     applyFiltersFromState();
   }
 
@@ -195,7 +232,7 @@
     const idx = PROJECTS.findIndex(function (p) { return p.id === id; });
     if (idx === -1) return;
     PROJECTS.splice(idx, 1);
-    saveToLocalStorage();
+    updateLastUpdatedTime();
     applyFiltersFromState();
   }
 
@@ -215,7 +252,7 @@
 
   function handleDeleteAllConfirm() {
     PROJECTS = [];
-    saveToLocalStorage();
+    updateLastUpdatedTime();
     applyFiltersFromState();
     closeDeleteAllConfirmModal();
   }
@@ -854,7 +891,7 @@
   }
 
   function exportData() {
-    const payload = { projects: PROJECTS, customOptions: CUSTOM_OPTIONS || {}, exportedAt: Date.now() };
+    const payload = { projects: PROJECTS, customOptions: CUSTOM_OPTIONS || {}, lastUpdatedAt: LAST_UPDATED_AT, exportedAt: Date.now() };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -870,11 +907,16 @@
     if (parsed && parsed.customOptions) {
       try { CUSTOM_OPTIONS = parsed.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
     }
+    // import lastUpdatedAt if present
+    if (parsed && parsed.lastUpdatedAt) {
+      LAST_UPDATED_AT = parsed.lastUpdatedAt;
+    }
     if (!list.length) return;
     PROJECTS = normalizeProjects(list);
     // apply custom options to selects then persist
     initCustomOptions();
     syncFilterOptionsWithForm();
+    updateLastUpdatedDisplay();
     saveToLocalStorage();
     applyFiltersFromState();
   }
@@ -1065,5 +1107,9 @@
   syncFilterOptionsWithForm();
   // ensure all selects are alphabetically ordered on startup
   sortAllSelects();
+  // Display initial last updated time
+  updateLastUpdatedDisplay();
+  // Update the relative time display every minute
+  setInterval(updateLastUpdatedDisplay, 60000);
   applyFiltersFromState();
 })();
