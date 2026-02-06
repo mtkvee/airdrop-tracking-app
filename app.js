@@ -108,6 +108,13 @@
   const $newOptionText = document.getElementById('newOptionText');
   const $addOptionBtn = document.getElementById('addOptionBtn');
   const $manageOptionsSave = document.getElementById('manageOptionsSave');
+  const $editOptionModal = document.getElementById('editOptionModal');
+  const $editOptionForm = document.getElementById('editOptionForm');
+  const $editOptionValue = document.getElementById('editOptionValue');
+  const $editOptionText = document.getElementById('editOptionText');
+  const $editOptionClose = document.getElementById('editOptionClose');
+  const $editOptionCancel = document.getElementById('editOptionCancel');
+  const $editOptionSave = document.getElementById('editOptionSave');
   const $deleteAllConfirmModal = document.getElementById('deleteAllConfirmModal');
   const $deleteAllConfirmClose = document.getElementById('deleteAllConfirmClose');
   const $deleteAllConfirmCancel = document.getElementById('deleteAllConfirmCancel');
@@ -593,6 +600,7 @@
   }
 
   let manageOptionsCurrentSelect = null;
+  let editOptionCurrentValue = null; // Track which option is being edited
 
   function openManageOptionsModal() {
     if (!$manageOptionsModal) return;
@@ -627,14 +635,29 @@
       return opt.value !== ''; // Skip empty option
     });
 
-    $optionsList.innerHTML = options.map(function(opt) {
-      return '<div class="option-item">' +
+    $optionsList.innerHTML = options.map(function(opt, idx) {
+      return '<div class="option-item" data-opt-index="' + idx + '">' +
         '<span><strong>' + escapeHtml(opt.text) + '</strong> <span style="color: #999; font-size: 0.85rem;">(' + escapeHtml(opt.value) + ')</span></span>' +
-        '<button type="button" class="btn-remove-option" data-value="' + escapeHtml(opt.value) + '">' +
+        '<div class="option-actions">' +
+        '<button type="button" class="btn-edit-option" data-value="' + escapeHtml(opt.value) + '" title="Edit">' +
+        '<i class="fas fa-pen"></i>' +
+        '</button>' +
+        '<button type="button" class="btn-remove-option" data-value="' + escapeHtml(opt.value) + '" title="Delete">' +
         '<i class="fas fa-trash-alt"></i>' +
         '</button>' +
+        '</div>' +
         '</div>';
     }).join('');
+
+    // Attach edit handlers
+    $optionsList.querySelectorAll('.btn-edit-option').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var val = btn.getAttribute('data-value');
+        var opt = Array.from(manageOptionsCurrentSelect.options).find(function(o) { return o.value === val; });
+        if (opt) openEditOptionModal(opt.value, opt.text);
+      });
+    });
 
     // Attach remove handlers (remove by value to avoid index mismatch)
     $optionsList.querySelectorAll('.btn-remove-option').forEach(function(btn) {
@@ -652,6 +675,63 @@
         }
       });
     });
+  }
+
+  function openEditOptionModal(oldValue, oldText) {
+    editOptionCurrentValue = oldValue;
+    if ($editOptionValue) $editOptionValue.value = oldValue;
+    if ($editOptionText) $editOptionText.value = oldText;
+    if ($editOptionModal) {
+      $editOptionModal.classList.add('open');
+      $editOptionModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      if ($editOptionValue) $editOptionValue.focus();
+    }
+  }
+
+  function closeEditOptionModal() {
+    if ($editOptionModal) {
+      $editOptionModal.classList.remove('open');
+      $editOptionModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    editOptionCurrentValue = null;
+  }
+
+  function handleEditOptionSave() {
+    var newValue = ($editOptionValue && $editOptionValue.value || '').trim();
+    var newText = ($editOptionText && $editOptionText.value || '').trim();
+
+    if (!newValue || !newText) {
+      showNotification('Error', 'Value and text cannot be empty.');
+      return;
+    }
+
+    // Update the option in the select element
+    if (manageOptionsCurrentSelect && editOptionCurrentValue) {
+      var opt = Array.from(manageOptionsCurrentSelect.options).find(function(o) { return o.value === editOptionCurrentValue; });
+      if (opt) {
+        opt.value = newValue;
+        opt.text = newText;
+        
+        // Update CUSTOM_OPTIONS immediately to sync with storage
+        var id = manageOptionsCurrentSelect.id;
+        if (CUSTOM_OPTIONS && CUSTOM_OPTIONS[id]) {
+          var idx = CUSTOM_OPTIONS[id].findIndex(function(o) { return o.value === editOptionCurrentValue; });
+          if (idx >= 0) {
+            CUSTOM_OPTIONS[id][idx].value = newValue;
+            CUSTOM_OPTIONS[id][idx].text = newText;
+          }
+        }
+        
+        // Refresh custom widgets and re-render table
+        try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
+        applyFiltersFromState(); // Re-render table to show updated option names
+        
+        renderOptionsList(); // Re-render options list to show changes
+        closeEditOptionModal();
+      }
+    }
   }
 
   function escapeHtml(text) {
@@ -1228,12 +1308,31 @@
       CUSTOM_OPTIONS[id] = arr;
       saveToLocalStorage();
       syncFilterOptionsWithForm();
+      // Refresh custom widgets and re-render table with updated options
+      try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
+      applyFiltersFromState(); // Update table display with new option values
     }
-    try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
     closeManageOptionsModal();
   });
   if ($manageOptionsClose) $manageOptionsClose.addEventListener('click', closeManageOptionsModal);
   if ($manageOptionsCancel) $manageOptionsCancel.addEventListener('click', closeManageOptionsModal);
+  if ($editOptionClose) $editOptionClose.addEventListener('click', closeEditOptionModal);
+  if ($editOptionCancel) $editOptionCancel.addEventListener('click', closeEditOptionModal);
+  if ($editOptionSave) $editOptionSave.addEventListener('click', handleEditOptionSave);
+  if ($editOptionForm) $editOptionForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    handleEditOptionSave();
+  });
+  if ($editOptionModal) $editOptionModal.addEventListener('click', function(e) {
+    if (e.target === $editOptionModal) closeEditOptionModal();
+  });
+  // Allow Enter key to save in edit modal
+  if ($editOptionValue) $editOptionValue.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleEditOptionSave();
+  });
+  if ($editOptionText) $editOptionText.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleEditOptionSave();
+  });
   if ($deleteAllConfirmOk) $deleteAllConfirmOk.addEventListener('click', handleDeleteAllConfirm);
   if ($deleteAllConfirmCancel) $deleteAllConfirmCancel.addEventListener('click', closeDeleteAllConfirmModal);
   if ($deleteAllConfirmClose) $deleteAllConfirmClose.addEventListener('click', closeDeleteAllConfirmModal);

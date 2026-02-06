@@ -509,6 +509,61 @@
       </div>
     </div>
 
+    <!-- Edit Option Modal -->
+    <div class="modal-overlay" id="editOptionModal" aria-hidden="true">
+      <div
+        class="modal modal-form"
+        role="dialog"
+        aria-labelledby="editOptionTitle"
+      >
+        <div class="modal-header">
+          <h2 id="editOptionTitle" class="modal-title">Edit Option</h2>
+          <button
+            type="button"
+            class="modal-close"
+            id="editOptionClose"
+            aria-label="Close"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body modal-body-form">
+          <form id="editOptionForm" class="edit-option-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editOptionValue">Value</label>
+                <input
+                  type="text"
+                  id="editOptionValue"
+                  name="editOptionValue"
+                  placeholder="e.g. quest"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editOptionText">Display Text</label>
+                <input
+                  type="text"
+                  id="editOptionText"
+                  name="editOptionText"
+                  placeholder="e.g. Quest"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="editOptionCancel">
+            Cancel
+          </button>
+          <button type="button" class="btn-apply" id="editOptionSave">
+            Update Option
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Delete All Confirmation Modal -->
     <div class="modal-overlay" id="deleteAllConfirmModal" aria-hidden="true">
       <div class="modal" role="dialog" aria-labelledby="deleteAllConfirmTitle">
