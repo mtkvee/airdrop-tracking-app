@@ -57,6 +57,93 @@
     <div class="app">
       <!-- Top header -->
       <header class="header">
+        <div class="header-right">
+          <div class="right-above">
+            <button
+              type="button"
+              class="btn-add-airdrop"
+              id="addAirdropBtn"
+              aria-label="Add airdrop"
+            >
+              <i class="fas fa-plus"></i> Add
+            </button>
+            <button
+              type="button"
+              class="btn-manage-options"
+              id="manageOptionsBtn"
+              aria-label="Manage select options"
+              title="Manage select options"
+            >
+              <i class="fas fa-sliders-h"></i>
+            </button>
+            <button
+              type="button"
+              class="btn-delete-all"
+              id="deleteAllBtn"
+              aria-label="Delete all airdrops"
+              title="Delete all airdrops"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          <div class="right-below">
+            <div>
+              <button
+                type="button"
+                class="btn-import-export"
+                id="exportBtn"
+                aria-label="Export airdrops"
+                title="Export"
+              >
+                <i class="fas fa-download"></i>
+              </button>
+              <button
+                type="button"
+                class="btn-import-export"
+                id="importBtn"
+                aria-label="Import airdrops"
+                title="Import"
+              >
+                <i class="fas fa-upload"></i>
+              </button>
+              <input
+                type="file"
+                id="importFileInput"
+                accept=".json,application/json"
+                hidden
+              />
+            </div>
+            <div class="tabs">
+              <button type="button" class="tab tab-active" data-tab="all">
+                All
+              </button>
+              <button type="button" class="tab" data-tab="newTasks">
+                New Tasks
+              </button>
+            </div>
+            <!-- <div class="pagination-nav">
+              <button
+                type="button"
+                class="nav-arrow"
+                id="prevPage"
+                aria-label="Previous page"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button
+                type="button"
+                class="nav-arrow"
+                id="nextPage"
+                aria-label="Next page"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <button type="button" class="user-icon" aria-label="User menu">
+              <i class="fas fa-user-circle"></i>
+            </button> -->
+          </div>
+        </div>
         <div class="header-left">
           <div class="search-wrap">
             <i class="fas fa-search search-icon"></i>
@@ -100,95 +187,8 @@
               aria-label="Remove all filters"
               title="Remove all filters"
             >
-              <i class="fas fa-times-circle"></i>
+              <i class="fa-solid fa-filter-circle-xmark"></i>
             </button>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="right-above">
-            <button
-              type="button"
-              class="btn-add-airdrop"
-              id="addAirdropBtn"
-              aria-label="Add airdrop"
-            >
-              <i class="fas fa-plus"></i> Add Airdrop
-            </button>
-            <button
-              type="button"
-              class="btn-manage-options"
-              id="manageOptionsBtn"
-              aria-label="Manage select options"
-              title="Manage select options"
-            >
-              <i class="fas fa-sliders-h"></i> Options
-            </button>
-            <button
-              type="button"
-              class="btn-delete-all"
-              id="deleteAllBtn"
-              aria-label="Delete all airdrops"
-              title="Delete all airdrops"
-            >
-              <i class="fas fa-trash"></i> Delete All
-            </button>
-          </div>
-          <div class="right-below">
-            <div>
-              <button
-                type="button"
-                class="btn-import-export"
-                id="exportBtn"
-                aria-label="Export airdrops"
-                title="Export"
-              >
-                <i class="fas fa-download"></i> Export
-              </button>
-              <button
-                type="button"
-                class="btn-import-export"
-                id="importBtn"
-                aria-label="Import airdrops"
-                title="Import"
-              >
-                <i class="fas fa-upload"></i> Import
-              </button>
-              <input
-                type="file"
-                id="importFileInput"
-                accept=".json,application/json"
-                hidden
-              />
-            </div>
-            <div class="tabs">
-              <button type="button" class="tab tab-active" data-tab="all">
-                All
-              </button>
-              <button type="button" class="tab" data-tab="newTasks">
-                New Tasks
-              </button>
-            </div>
-            <!-- <div class="pagination-nav">
-              <button
-                type="button"
-                class="nav-arrow"
-                id="prevPage"
-                aria-label="Previous page"
-              >
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <button
-                type="button"
-                class="nav-arrow"
-                id="nextPage"
-                aria-label="Next page"
-              >
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-            <button type="button" class="user-icon" aria-label="User menu">
-              <i class="fas fa-user-circle"></i>
-            </button> -->
           </div>
         </div>
       </header>

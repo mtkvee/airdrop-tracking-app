@@ -136,7 +136,7 @@ button {
   background: none;
   flex: 1;
   min-width: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 .search-input::placeholder {
   color: #86868b;
@@ -162,7 +162,7 @@ button {
   border: 1px solid #e5e5e7;
   border-radius: 8px;
   background: #fff;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #505050;
   cursor: pointer;
   appearance: none;
@@ -192,6 +192,10 @@ button {
   background: #fff5f5;
   color: #ff3b30;
   border-color: #ffcdd2;
+}
+
+.fa-filter-circle-xmark {
+  font-size: 0.9rem;
 }
 
 .btn-import-export {
@@ -313,7 +317,7 @@ button {
   border-radius: 10px;
   background: #dc3545;
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 1rem;
   cursor: pointer;
 }
 .btn-delete-all:hover {
@@ -331,7 +335,7 @@ button {
   border-radius: 10px;
   background: #6c757d;
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 1rem;
   cursor: pointer;
 }
 .btn-manage-options:hover {
@@ -1290,10 +1294,15 @@ select#airdropRewardType {
 
   .btn-remove-filters::before {
     content: "Remove all filters";
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-right: 0.5rem;
     display: block;
   }
+
+  .fa-filter-circle-xmark {
+    margin-top: 0.2rem;
+  }
+
   .data-table th,
   .data-table td {
     padding: 0.75rem;
@@ -1320,7 +1329,8 @@ select#airdropRewardType {
   .right-above,
   .right-below {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     gap: 0.5rem;
     width: 100%;
   }
@@ -1348,6 +1358,10 @@ select#airdropRewardType {
 
   .filter-select {
     min-width: 0;
+    width: 100%;
+  }
+
+  .btn-delete-all {
     width: 100%;
   }
 }
