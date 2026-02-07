@@ -1294,7 +1294,7 @@ select#airdropRewardType {
 
   .btn-remove-filters::before {
     content: "Remove all filters";
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     margin-right: 0.5rem;
     display: block;
   }
