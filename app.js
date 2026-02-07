@@ -802,7 +802,7 @@
     return {
       id: idVal,
       name: nameEl ? nameEl.value : '',
-      code: codeEl ? codeEl.value : '',
+      code: codeEl ? codeEl.value.toUpperCase() : '',
       link: linkEl ? linkEl.value : '',
       taskType: taskTypeEl ? (taskTypeEl.multiple ? Array.from(taskTypeEl.selectedOptions).map(function(o){ return o.value; }) : taskTypeEl.value) : [],
       noActiveTasks: noTasksEl ? noTasksEl.checked : false,

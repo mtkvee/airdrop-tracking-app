@@ -53,16 +53,27 @@ h1 {
   margin: 2rem 0 1rem 0;
 }
 
-h3 a {
-  text-decoration: none;
-  color: #0071e3;
-  font-size: 1.5rem;
-  opacity: 0.8;
+h1,
+.social-icons {
+  text-align: center;
 }
 
-h1,
-h3 {
-  text-align: center;
+.social-icons {
+  margin-bottom: 1rem;
+}
+
+.social-icons .social-icon:first-child {
+  margin-right: 0.3rem;
+}
+
+.social-icon {
+  color: #505050;
+  font-size: 1.25rem;
+  transition: color 0.2s;
+}
+
+.social-icon:hover {
+  color: #303030;
 }
 
 .app {
@@ -499,7 +510,7 @@ button {
   cursor: pointer;
 }
 .project-link:hover .name {
-  color: #0071e3;
+  color: #303030;
   text-decoration: none;
   transition: 0.2s ease-in;
 }
@@ -527,7 +538,7 @@ button {
 .project-info .name {
   font-size: 1rem;
   font-weight: 600;
-  color: #1d1d1f;
+  color: #505050;
 }
 .project-info .code {
   font-size: 0.85rem;
@@ -588,6 +599,7 @@ button {
 }
 .task-desc {
   font-size: 0.85rem;
+  font-weight: bold;
   color: #6e6e73;
 }
 .no-tasks {
@@ -631,6 +643,8 @@ button {
 }
 .reward-type {
   font-size: 0.9rem;
+  font-weight: 500;
+  color: #6e6e73;
 }
 
 /* Column: Raise/Funds */
