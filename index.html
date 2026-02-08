@@ -45,7 +45,9 @@
     />
   </head>
   <body>
-    <h1>Airdrop Tracker <span style="font-size: 0.85rem">(v0.1)</span></h1>
+    <h1 class="app-title">
+      Airdrop Tracker <span class="app-version">(v0.1)</span>
+    </h1>
     <div class="social-icons">
       <a class="social-icon" href="https://t.me/mgveec" target="_blank"
         ><i class="fa-brands fa-telegram"></i
@@ -121,27 +123,6 @@
                 New Tasks
               </button>
             </div>
-            <!-- <div class="pagination-nav">
-              <button
-                type="button"
-                class="nav-arrow"
-                id="prevPage"
-                aria-label="Previous page"
-              >
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <button
-                type="button"
-                class="nav-arrow"
-                id="nextPage"
-                aria-label="Next page"
-              >
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-            <button type="button" class="user-icon" aria-label="User menu">
-              <i class="fas fa-user-circle"></i>
-            </button> -->
           </div>
         </div>
         <div class="header-left">
@@ -221,12 +202,7 @@
                 <th class="col-raise sortable" data-sort="raise">
                   Raise/Funds
                 </th>
-                <th
-                  class="col-actions"
-                  style="/* align-items: center; */ text-align: center"
-                >
-                  Actions
-                </th>
+                <th class="col-actions col-actions-header">Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody">
@@ -281,9 +257,8 @@
             </div>
             <div
               id="airdropFormError"
-              class="form-error"
+              class="form-error is-hidden"
               aria-live="assertive"
-              style="display: none"
             ></div>
             <div class="form-row">
               <div class="form-group">

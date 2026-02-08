@@ -6,6 +6,33 @@
   let CUSTOM_OPTIONS = {};
   let LAST_UPDATED_AT = 0; // Track when data was last updated
 
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function on(el, event, handler) {
+    if (el) el.addEventListener(event, handler);
+  }
+
+  function ensureArray(value) {
+    if (Array.isArray(value)) return value;
+    if (value == null || value === '') return [];
+    return [value];
+  }
+
+  function ensureArrayOr(value, fallback) {
+    const arr = ensureArray(value);
+    if (arr.length) return arr;
+    return Array.isArray(fallback) ? fallback.slice() : [];
+  }
+
+  function setModalState(modal, open) {
+    if (!modal) return;
+    modal.classList.toggle('open', open);
+    modal.setAttribute('aria-hidden', open ? 'false' : 'true');
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
   function loadFromLocalStorage() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -28,6 +55,7 @@
 
   function normalizeProjects(list) {
     return list.map(function (p) {
+      const taskTypeSource = (p.taskType != null && p.taskType !== '') ? p.taskType : p.task;
       return {
         id: p.id,
         name: p.name || '',
@@ -36,15 +64,15 @@
         logo: p.logo || '',
         initial: (p.name && p.name.charAt(0)) ? p.name.charAt(0).toUpperCase() : '?',
         favorite: !!p.favorite,
-        taskType: Array.isArray(p.taskType) ? p.taskType : (p.taskType ? [p.taskType] : (p.task ? (Array.isArray(p.task) ? p.task : [p.task]) : [])),
-        connectType: Array.isArray(p.connectType) ? p.connectType : (p.connectType ? [p.connectType] : []),
+        taskType: ensureArray(taskTypeSource),
+        connectType: ensureArray(p.connectType),
         taskCost: p.taskCost != null ? p.taskCost : '0',
         taskTime: p.taskTime != null ? p.taskTime : '3',
         noActiveTasks: !!p.noActiveTasks,
         isNew: !!p.isNew,
         status: p.status || 'potential',
         statusDate: p.statusDate || '',
-        rewardType: Array.isArray(p.rewardType) ? p.rewardType : (p.rewardType ? [p.rewardType] : ['Airdrop']),
+        rewardType: ensureArrayOr(p.rewardType, ['Airdrop']),
         raise: p.raise || null,
         raiseCount: p.raiseCount != null ? p.raiseCount : 0,
         logos: Array.isArray(p.logos) ? p.logos : [],
@@ -71,63 +99,58 @@
   let filteredProjects = [];
   let sortKey = 'name';
   let sortDir = 'asc';
-  let modalFilters = {};
   let deleteConfirmId = null;
   let viewMode = 'all';
 
-  const $tableBody = document.getElementById('tableBody');
-  const $searchInput = document.getElementById('searchInput');
-  const $taskFilter = document.getElementById('taskFilter');
-  const $taskTypeFilter = document.getElementById('taskTypeFilter');
-  const $statusFilter = document.getElementById('statusFilter');
-  const $filtersModal = document.getElementById('filtersModal');
-  const $modalClose = document.getElementById('modalClose');
-  const $resetFilters = document.getElementById('resetFilters');
-  const $applyFilters = document.getElementById('applyFilters');
-  const $addAirdropBtn = document.getElementById('addAirdropBtn');
-  const $airdropFormModal = document.getElementById('airdropFormModal');
-  const $airdropForm = document.getElementById('airdropForm');
-  const $airdropFormClose = document.getElementById('airdropFormClose');
-  const $airdropFormCancel = document.getElementById('airdropFormCancel');
-  const $airdropFormTitle = document.getElementById('airdropFormTitle');
-  const $deleteConfirmModal = document.getElementById('deleteConfirmModal');
-  const $deleteConfirmClose = document.getElementById('deleteConfirmClose');
-  const $deleteConfirmCancel = document.getElementById('deleteConfirmCancel');
-  const $deleteConfirmOk = document.getElementById('deleteConfirmOk');
-  const $deleteConfirmMessage = document.getElementById('deleteConfirmMessage');
-  const $removeFiltersBtn = document.getElementById('removeFiltersBtn');
-  const $deleteAllBtn = document.getElementById('deleteAllBtn');
-  const $manageOptionsBtn = document.getElementById('manageOptionsBtn');
-  const $manageOptionsModal = document.getElementById('manageOptionsModal');
-  const $manageOptionsForm = document.getElementById('manageOptionsForm');
-  const $manageOptionsClose = document.getElementById('manageOptionsClose');
-  const $manageOptionsCancel = document.getElementById('manageOptionsCancel');
-  const $selectToManage = document.getElementById('selectToManage');
-  const $optionsList = document.getElementById('optionsList');
-  const $newOptionValue = document.getElementById('newOptionValue');
-  const $newOptionText = document.getElementById('newOptionText');
-  const $addOptionBtn = document.getElementById('addOptionBtn');
-  const $manageOptionsSave = document.getElementById('manageOptionsSave');
-  const $editOptionModal = document.getElementById('editOptionModal');
-  const $editOptionForm = document.getElementById('editOptionForm');
-  const $editOptionValue = document.getElementById('editOptionValue');
-  const $editOptionText = document.getElementById('editOptionText');
-  const $editOptionClose = document.getElementById('editOptionClose');
-  const $editOptionCancel = document.getElementById('editOptionCancel');
-  const $editOptionSave = document.getElementById('editOptionSave');
-  const $deleteAllConfirmModal = document.getElementById('deleteAllConfirmModal');
-  const $deleteAllConfirmClose = document.getElementById('deleteAllConfirmClose');
-  const $deleteAllConfirmCancel = document.getElementById('deleteAllConfirmCancel');
-  const $deleteAllConfirmOk = document.getElementById('deleteAllConfirmOk');
-  const $exportBtn = document.getElementById('exportBtn');
-  const $importBtn = document.getElementById('importBtn');
-  const $importFileInput = document.getElementById('importFileInput');
-  const $notificationModal = document.getElementById('notificationModal');
-  const $notificationTitle = document.getElementById('notificationTitle');
-  const $notificationMessage = document.getElementById('notificationMessage');
-  const $notificationClose = document.getElementById('notificationClose');
-  const $notificationOk = document.getElementById('notificationOk');
-  const $lastUpdatedTime = document.getElementById('lastUpdatedTime');
+  const $tableBody = byId('tableBody');
+  const $searchInput = byId('searchInput');
+  const $taskFilter = byId('taskFilter');
+  const $taskTypeFilter = byId('taskTypeFilter');
+  const $statusFilter = byId('statusFilter');
+  const $addAirdropBtn = byId('addAirdropBtn');
+  const $airdropFormModal = byId('airdropFormModal');
+  const $airdropForm = byId('airdropForm');
+  const $airdropFormClose = byId('airdropFormClose');
+  const $airdropFormCancel = byId('airdropFormCancel');
+  const $airdropFormTitle = byId('airdropFormTitle');
+  const $deleteConfirmModal = byId('deleteConfirmModal');
+  const $deleteConfirmClose = byId('deleteConfirmClose');
+  const $deleteConfirmCancel = byId('deleteConfirmCancel');
+  const $deleteConfirmOk = byId('deleteConfirmOk');
+  const $deleteConfirmMessage = byId('deleteConfirmMessage');
+  const $removeFiltersBtn = byId('removeFiltersBtn');
+  const $deleteAllBtn = byId('deleteAllBtn');
+  const $manageOptionsBtn = byId('manageOptionsBtn');
+  const $manageOptionsModal = byId('manageOptionsModal');
+  const $manageOptionsForm = byId('manageOptionsForm');
+  const $manageOptionsClose = byId('manageOptionsClose');
+  const $manageOptionsCancel = byId('manageOptionsCancel');
+  const $selectToManage = byId('selectToManage');
+  const $optionsList = byId('optionsList');
+  const $newOptionValue = byId('newOptionValue');
+  const $newOptionText = byId('newOptionText');
+  const $addOptionBtn = byId('addOptionBtn');
+  const $manageOptionsSave = byId('manageOptionsSave');
+  const $editOptionModal = byId('editOptionModal');
+  const $editOptionForm = byId('editOptionForm');
+  const $editOptionValue = byId('editOptionValue');
+  const $editOptionText = byId('editOptionText');
+  const $editOptionClose = byId('editOptionClose');
+  const $editOptionCancel = byId('editOptionCancel');
+  const $editOptionSave = byId('editOptionSave');
+  const $deleteAllConfirmModal = byId('deleteAllConfirmModal');
+  const $deleteAllConfirmClose = byId('deleteAllConfirmClose');
+  const $deleteAllConfirmCancel = byId('deleteAllConfirmCancel');
+  const $deleteAllConfirmOk = byId('deleteAllConfirmOk');
+  const $exportBtn = byId('exportBtn');
+  const $importBtn = byId('importBtn');
+  const $importFileInput = byId('importFileInput');
+  const $notificationModal = byId('notificationModal');
+  const $notificationTitle = byId('notificationTitle');
+  const $notificationMessage = byId('notificationMessage');
+  const $notificationClose = byId('notificationClose');
+  const $notificationOk = byId('notificationOk');
+  const $lastUpdatedTime = byId('lastUpdatedTime');
 
   function formatRelativeTime(timestamp) {
     if (!timestamp) return 'Never';
@@ -172,15 +195,15 @@
       name: p.name,
       code: p.code,
       link: p.link || '',
-      taskType: Array.isArray(p.taskType) ? p.taskType.slice() : (p.taskType ? [p.taskType] : []),
+      taskType: ensureArray(p.taskType).slice(),
       noActiveTasks: p.noActiveTasks,
       isNew: p.isNew,
-      connectType: Array.isArray(p.connectType) ? p.connectType.slice() : (p.connectType ? [p.connectType] : []),
+      connectType: ensureArray(p.connectType).slice(),
       taskCost: p.taskCost != null ? p.taskCost : '',
       taskTime: p.taskTime != null ? p.taskTime : '',
       status: p.status || 'potential',
       statusDate: p.statusDate || '',
-      rewardType: Array.isArray(p.rewardType) ? p.rewardType.slice() : (p.rewardType ? [p.rewardType] : ['Airdrop']),
+      rewardType: ensureArrayOr(p.rewardType, ['Airdrop']).slice(),
       raise: p.raise || '',
       raiseCount: p.raiseCount != null ? p.raiseCount : 0,
     };
@@ -200,15 +223,15 @@
       logo: null,
       initial: initial,
       favorite: existingId ? (PROJECTS.find(function (p) { return p.id === existingId; }) || {}).favorite : false,
-      taskType: Array.isArray(data.taskType) ? data.taskType : (data.taskType ? [data.taskType] : []),
-      connectType: Array.isArray(data.connectType) ? data.connectType : (data.connectType ? [data.connectType] : []),
+      taskType: ensureArray(data.taskType),
+      connectType: ensureArray(data.connectType),
       taskCost: data.taskCost !== '' && data.taskCost != null ? Number(data.taskCost) : 0,
       taskTime: data.taskTime !== '' && data.taskTime != null ? Number(data.taskTime) : 3,
       noActiveTasks: noActive,
       isNew: !!data.isNew,
       status: data.status || 'potential',
       statusDate: (data.statusDate || '').trim() || '',
-      rewardType: Array.isArray(data.rewardType) ? data.rewardType : (data.rewardType ? [data.rewardType] : ['Airdrop']),
+      rewardType: ensureArrayOr(data.rewardType, ['Airdrop']),
       raise: (data.raise || '').trim() || null,
       raiseCount: data.raiseCount != null ? Number(data.raiseCount) : 0,
       logos: existingId ? (PROJECTS.find(function (p) { return p.id === existingId; }) || {}).logos : [],
@@ -244,17 +267,11 @@
   }
 
   function deleteAllProjects() {
-    if (!$deleteAllConfirmModal) return;
-    $deleteAllConfirmModal.classList.add('open');
-    $deleteAllConfirmModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    setModalState($deleteAllConfirmModal, true);
   }
 
   function closeDeleteAllConfirmModal() {
-    if (!$deleteAllConfirmModal) return;
-    $deleteAllConfirmModal.classList.remove('open');
-    $deleteAllConfirmModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    setModalState($deleteAllConfirmModal, false);
   }
 
   function handleDeleteAllConfirm() {
@@ -268,7 +285,7 @@
     const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.potential;
     function getOptionText(selectId, val) {
       try {
-        const sel = document.getElementById(selectId);
+        const sel = byId(selectId);
         if (!sel) return val || '';
         const opt = Array.from(sel.options).find(function(o){ return o.value === val; });
         return opt ? opt.text : (val != null ? String(val) : '');
@@ -359,7 +376,6 @@
     const taskType = $taskFilter && $taskFilter.value || '';
     const connectType = $taskTypeFilter && $taskTypeFilter.value || '';
     const status = $statusFilter && $statusFilter.value || '';
-
     filteredProjects = PROJECTS.filter(function (p) {
       if (search) {
         const match = (p.name + ' ' + p.code).toLowerCase().includes(search);
@@ -373,19 +389,6 @@
         if (!p.connectType || !Array.isArray(p.connectType) || !p.connectType.includes(connectType)) return false;
       }
       if (status && p.status !== status) return false;
-
-      if (modalFilters.connectType && modalFilters.connectType.length) {
-        if (p.noActiveTasks) return false;
-        if (!modalFilters.connectType.includes(p.connectType)) return false;
-      }
-      if (modalFilters.rewardType && modalFilters.rewardType.length) {
-        const r = p.rewardType.toLowerCase();
-        if (!modalFilters.rewardType.includes(r)) return false;
-      }
-      if (modalFilters.status && modalFilters.status.length) {
-        if (!modalFilters.status.includes(p.status)) return false;
-      }
-      if (modalFilters.newActivities && modalFilters.newActivities.includes('yes') && !p.isNew) return false;
 
       return true;
     });
@@ -428,34 +431,33 @@
   function renderTable() {
     if (!$tableBody) return;
     $tableBody.innerHTML = filteredProjects.map(renderProjectRow).join('');
+  }
 
-    $tableBody.querySelectorAll('.star-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const id = parseInt(btn.getAttribute('data-id'), 10);
-        const p = PROJECTS.find(function (x) { return x.id === id; });
-        if (p) {
-          p.favorite = !p.favorite;
-          applyFiltersFromState();
-        }
-      });
-    });
-    $tableBody.querySelectorAll('.btn-action[data-action="edit"]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const id = parseInt(btn.getAttribute('data-id'), 10);
-        openAirdropFormForEdit(id);
-      });
-    });
-    $tableBody.querySelectorAll('.btn-action[data-action="delete"]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const id = parseInt(btn.getAttribute('data-id'), 10);
-        openDeleteConfirmModal(id);
-      });
-    });
+  function handleTableClick(e) {
+    if (!$tableBody || !e.target || typeof e.target.closest !== 'function') return;
+    const starBtn = e.target.closest('.star-btn');
+    if (starBtn && $tableBody.contains(starBtn)) {
+      const id = parseInt(starBtn.getAttribute('data-id'), 10);
+      const p = PROJECTS.find(function (x) { return x.id === id; });
+      if (p) {
+        p.favorite = !p.favorite;
+        applyFiltersFromState();
+      }
+      return;
+    }
+
+    const actionBtn = e.target.closest('.btn-action');
+    if (actionBtn && $tableBody.contains(actionBtn)) {
+      const id = parseInt(actionBtn.getAttribute('data-id'), 10);
+      const action = actionBtn.getAttribute('data-action');
+      if (action === 'edit') openAirdropFormForEdit(id);
+      if (action === 'delete') openDeleteConfirmModal(id);
+    }
   }
 
   function syncFilterOptionsWithForm() {
     // Sync Task Type options from airdropTaskType to taskFilter
-    const $airdropTaskType = document.getElementById('airdropTaskType');
+    const $airdropTaskType = byId('airdropTaskType');
     if ($airdropTaskType && $taskFilter) {
       const formOptions = Array.from($airdropTaskType.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
@@ -484,7 +486,7 @@
     }
 
     // Sync Connect Type options from airdropConnectType to taskTypeFilter
-    const $airdropConnectType = document.getElementById('airdropConnectType');
+    const $airdropConnectType = byId('airdropConnectType');
     if ($airdropConnectType && $taskTypeFilter) {
       const formOptions = Array.from($airdropConnectType.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
@@ -509,7 +511,7 @@
     }
 
     // Sync Status options from airdropStatus to statusFilter
-    const $airdropStatus = document.getElementById('airdropStatus');
+    const $airdropStatus = byId('airdropStatus');
     if ($airdropStatus && $statusFilter) {
       const formOptions = Array.from($airdropStatus.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
@@ -534,7 +536,7 @@
     }
 
     // Sync Reward Type options from airdropRewardType (collect from actual data)
-    const $airdropRewardType = document.getElementById('airdropRewardType');
+    const $airdropRewardType = byId('airdropRewardType');
     if ($airdropRewardType) {
       const rewardTypeOptions = Array.from($airdropRewardType.options).map(function(opt) {
         return { value: opt.value, text: opt.text };
@@ -546,7 +548,7 @@
 
   function applyCustomOptionsToSelect(id) {
     if (!CUSTOM_OPTIONS || !CUSTOM_OPTIONS[id]) return;
-    const selectEl = document.getElementById(id);
+    const selectEl = byId(id);
     if (!selectEl) return;
     // keep the first empty option if present
     const keepEmpty = selectEl.options.length && selectEl.options[0].value === '';
@@ -573,7 +575,7 @@
 
   // Sort DOM select element options alphabetically (preserve empty first option if present)
   function sortSelectElement(selectId) {
-    var sel = document.getElementById(selectId);
+    var sel = byId(selectId);
     if (!sel) return;
     var empty = null;
     var items = [];
@@ -584,13 +586,20 @@
     }
     items.sort(function(a, b) { return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' }); });
     var cur = sel.value;
+    var curMulti = sel.multiple ? Array.from(sel.selectedOptions).map(function(opt) { return opt.value; }) : null;
     sel.innerHTML = '';
     if (empty) {
       var e = document.createElement('option'); e.value = empty.value; e.text = empty.text; sel.appendChild(e);
     }
     items.forEach(function(it) { var opt = document.createElement('option'); opt.value = it.value; opt.text = it.text; sel.appendChild(opt); });
     // restore selection if still present
-    try { sel.value = cur; } catch (e) {}
+    try {
+      if (sel.multiple && curMulti) {
+        Array.from(sel.options).forEach(function(opt) { opt.selected = curMulti.indexOf(opt.value) >= 0; });
+      } else {
+        sel.value = cur;
+      }
+    } catch (e) {}
   }
 
   function sortAllSelects() {
@@ -619,16 +628,11 @@
     $optionsList.innerHTML = '';
     $newOptionValue.value = '';
     $newOptionText.value = '';
-    $manageOptionsModal.classList.add('open');
-    $manageOptionsModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    setModalState($manageOptionsModal, true);
   }
 
   function closeManageOptionsModal() {
-    if (!$manageOptionsModal) return;
-    $manageOptionsModal.classList.remove('open');
-    $manageOptionsModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    setModalState($manageOptionsModal, false);
   }
 
   function renderOptionsList() {
@@ -637,7 +641,7 @@
       return;
     }
 
-    const selectEl = document.getElementById($selectToManage.value);
+    const selectEl = byId($selectToManage.value);
     if (!selectEl) return;
 
     manageOptionsCurrentSelect = selectEl;
@@ -691,20 +695,12 @@
     editOptionCurrentValue = oldValue;
     if ($editOptionValue) $editOptionValue.value = oldValue;
     if ($editOptionText) $editOptionText.value = oldText;
-    if ($editOptionModal) {
-      $editOptionModal.classList.add('open');
-      $editOptionModal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      if ($editOptionValue) $editOptionValue.focus();
-    }
+    setModalState($editOptionModal, true);
+    if ($editOptionValue) $editOptionValue.focus();
   }
 
   function closeEditOptionModal() {
-    if ($editOptionModal) {
-      $editOptionModal.classList.remove('open');
-      $editOptionModal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    }
+    setModalState($editOptionModal, false);
     editOptionCurrentValue = null;
   }
 
@@ -750,54 +746,35 @@
     return div.innerHTML;
   }
 
-  function openModal() {
-    if (!$filtersModal) return;
-    $filtersModal.classList.add('open');
-    $filtersModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    if (!$filtersModal) return;
-    $filtersModal.classList.remove('open');
-    $filtersModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
   function openAirdropFormModal() {
     if (!$airdropFormModal) return;
     syncFilterOptionsWithForm();
     // Refresh custom multi-select widgets to ensure proper isolation
     try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch (e) {}
-    $airdropFormModal.classList.add('open');
-    $airdropFormModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    setModalState($airdropFormModal, true);
   }
 
   function closeAirdropFormModal() {
-    if (!$airdropFormModal) return;
-    $airdropFormModal.classList.remove('open');
-    $airdropFormModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    setModalState($airdropFormModal, false);
     hideAirdropFormError();
   }
 
   function getAirdropFormData() {
-    const idEl = document.getElementById('airdropId');
-    const nameEl = document.getElementById('airdropName');
-    const codeEl = document.getElementById('airdropCode');
-    const linkEl = document.getElementById('airdropLink');
-    const taskTypeEl = document.getElementById('airdropTaskType');
-    const noTasksEl = document.getElementById('airdropNoTasks');
-    const isNewEl = document.getElementById('airdropIsNew');
-    const connectTypeEl = document.getElementById('airdropConnectType');
-    const taskCostEl = document.getElementById('airdropTaskCost');
-    const taskTimeEl = document.getElementById('airdropTaskTime');
-    const statusEl = document.getElementById('airdropStatus');
-    const statusDateEl = document.getElementById('airdropStatusDate');
-    const rewardTypeEl = document.getElementById('airdropRewardType');
-    const raiseEl = document.getElementById('airdropRaise');
-    const raiseCountEl = document.getElementById('airdropRaiseCount');
+    const idEl = byId('airdropId');
+    const nameEl = byId('airdropName');
+    const codeEl = byId('airdropCode');
+    const linkEl = byId('airdropLink');
+    const taskTypeEl = byId('airdropTaskType');
+    const noTasksEl = byId('airdropNoTasks');
+    const isNewEl = byId('airdropIsNew');
+    const connectTypeEl = byId('airdropConnectType');
+    const taskCostEl = byId('airdropTaskCost');
+    const taskTimeEl = byId('airdropTaskTime');
+    const statusEl = byId('airdropStatus');
+    const statusDateEl = byId('airdropStatusDate');
+    const rewardTypeEl = byId('airdropRewardType');
+    const raiseEl = byId('airdropRaise');
+    const raiseCountEl = byId('airdropRaiseCount');
     const idVal = idEl && idEl.value ? parseInt(idEl.value, 10) : null;
     return {
       id: idVal,
@@ -820,7 +797,7 @@
 
   function setAirdropFormData(data) {
     const set = function (id, value) {
-      const el = document.getElementById(id);
+      const el = byId(id);
       if (!el) return;
       if (el.type === 'checkbox') el.checked = !!value;
       else if (el.multiple) {
@@ -904,12 +881,13 @@
 
   function showAirdropFormError(msg) {
     try {
-      const el = document.getElementById('airdropFormError');
+      const el = byId('airdropFormError');
       if (!el) {
         showNotification('Error', msg);
         return;
       }
       el.textContent = msg;
+      el.classList.remove('is-hidden');
       el.style.display = 'block';
     } catch (e) {
       console.error(e);
@@ -918,9 +896,10 @@
 
   function hideAirdropFormError() {
     try {
-      const el = document.getElementById('airdropFormError');
+      const el = byId('airdropFormError');
       if (!el) return;
       el.textContent = '';
+      el.classList.add('is-hidden');
       el.style.display = 'none';
     } catch (e) {}
   }
@@ -929,16 +908,11 @@
     if (!$notificationModal) return;
     if ($notificationTitle) $notificationTitle.textContent = title;
     if ($notificationMessage) $notificationMessage.textContent = message;
-    $notificationModal.classList.add('open');
-    $notificationModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    setModalState($notificationModal, true);
   }
 
   function closeNotificationModal() {
-    if (!$notificationModal) return;
-    $notificationModal.classList.remove('open');
-    $notificationModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    setModalState($notificationModal, false);
   }
 
   function openDeleteConfirmModal(id) {
@@ -948,20 +922,12 @@
     if ($deleteConfirmMessage) {
       $deleteConfirmMessage.textContent = 'Remove "' + p.name + '" from the list? This cannot be undone.';
     }
-    if ($deleteConfirmModal) {
-      $deleteConfirmModal.classList.add('open');
-      $deleteConfirmModal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-    }
+    setModalState($deleteConfirmModal, true);
   }
 
   function closeDeleteConfirmModal() {
     deleteConfirmId = null;
-    if ($deleteConfirmModal) {
-      $deleteConfirmModal.classList.remove('open');
-      $deleteConfirmModal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    }
+    setModalState($deleteConfirmModal, false);
   }
 
   function handleDeleteConfirm() {
@@ -988,18 +954,6 @@
       $searchInput.value = '';
       $searchInput.dispatchEvent(new Event('input'));
     }
-    modalFilters = {};
-    document.querySelectorAll('.filter-category-content input:checkbox').forEach(function (input) {
-      input.checked = false;
-    });
-    document.querySelectorAll('.filter-category.expanded').forEach(function (btn) {
-      btn.classList.remove('expanded');
-    });
-    document.querySelectorAll('.filter-category-content.open').forEach(function (el) {
-      el.classList.remove('open');
-    });
-    // ensure modal closed and table refreshed
-    if ($filtersModal) closeModal();
     applyFiltersFromState();
   }
 
@@ -1050,52 +1004,9 @@
     reader.readAsText(file);
   }
 
-  function readModalFilters() {
-    const o = {};
-    document.querySelectorAll('.filter-category-content.open input:checked').forEach(function (input) {
-      const name = input.getAttribute('name');
-      if (!name) return;
-      const key = name.replace('ft-', '').replace(/-.+/, '');
-      if (!o[key]) o[key] = [];
-      o[key].push(input.value);
-    });
-    modalFilters = o;
-  }
-
-  function applyModalFilters() {
-    readModalFilters();
-    applyFiltersFromState();
-    closeModal();
-  }
-
-  function resetModalFilters() {
-    document.querySelectorAll('.filter-category-content input:checkbox').forEach(function (input) {
-      input.checked = false;
-    });
-    modalFilters = {};
-    $taskFilter.value = '';
-    $taskTypeFilter.value = '';
-    $statusFilter.value = '';
-    if ($searchInput) $searchInput.value = '';
-    applyFiltersFromState();
-    closeModal();
-  }
-
-  function initModalCategories() {
-    document.querySelectorAll('.filter-category').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const cat = btn.getAttribute('data-category');
-        const content = document.getElementById('content-' + cat);
-        if (!content) return;
-        btn.classList.toggle('expanded');
-        content.classList.toggle('open');
-      });
-    });
-  }
-
   // --- Custom multi-select UI (checkbox-style) ---
   function createOrUpdateCustomMultiSelect(id) {
-    var sel = document.getElementById(id);
+    var sel = byId(id);
     if (!sel || !sel.multiple) return; // Only for multiple selects
     
     // remove previous widget if present
@@ -1238,41 +1149,32 @@
     });
   }
 
-  if ($searchInput) $searchInput.addEventListener('input', applyFiltersFromState);
-  if ($taskFilter) $taskFilter.addEventListener('change', applyFiltersFromState);
-  if ($taskTypeFilter) $taskTypeFilter.addEventListener('change', applyFiltersFromState);
-  if ($statusFilter) $statusFilter.addEventListener('change', applyFiltersFromState);
-  if ($modalClose) $modalClose.addEventListener('click', closeModal);
-  if ($applyFilters) $applyFilters.addEventListener('click', applyModalFilters);
-  if ($resetFilters) $resetFilters.addEventListener('click', resetModalFilters);
-
-  $filtersModal && $filtersModal.addEventListener('click', function (e) {
-    if (e.target === $filtersModal) closeModal();
-  });
+  on($searchInput, 'input', applyFiltersFromState);
+  on($taskFilter, 'change', applyFiltersFromState);
+  on($taskTypeFilter, 'change', applyFiltersFromState);
+  on($statusFilter, 'change', applyFiltersFromState);
+  on($tableBody, 'click', handleTableClick);
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if ($airdropFormModal && $airdropFormModal.classList.contains('open')) closeAirdropFormModal();
     else if ($deleteConfirmModal && $deleteConfirmModal.classList.contains('open')) closeDeleteConfirmModal();
-    else if ($filtersModal && $filtersModal.classList.contains('open')) closeModal();
   });
 
-  if ($addAirdropBtn) {
-    $addAirdropBtn.addEventListener('click', function () {
-      resetAirdropForm();
-      if ($airdropFormTitle) $airdropFormTitle.textContent = 'Add Airdrop';
-      hideAirdropFormError();
-      openAirdropFormModal();
-    });
-  }
-  if ($airdropForm) $airdropForm.addEventListener('submit', handleAirdropFormSubmit);
-  if ($airdropFormClose) $airdropFormClose.addEventListener('click', closeAirdropFormModal);
-  if ($airdropFormCancel) $airdropFormCancel.addEventListener('click', closeAirdropFormModal);
+  on($addAirdropBtn, 'click', function () {
+    resetAirdropForm();
+    if ($airdropFormTitle) $airdropFormTitle.textContent = 'Add Airdrop';
+    hideAirdropFormError();
+    openAirdropFormModal();
+  });
+  on($airdropForm, 'submit', handleAirdropFormSubmit);
+  on($airdropFormClose, 'click', closeAirdropFormModal);
+  on($airdropFormCancel, 'click', closeAirdropFormModal);
   $airdropFormModal && $airdropFormModal.addEventListener('click', function (e) {
     if (e.target === $airdropFormModal) closeAirdropFormModal();
   });
-  if ($deleteConfirmClose) $deleteConfirmClose.addEventListener('click', closeDeleteConfirmModal);
-  if ($deleteConfirmCancel) $deleteConfirmCancel.addEventListener('click', closeDeleteConfirmModal);
-  if ($deleteConfirmOk) $deleteConfirmOk.addEventListener('click', handleDeleteConfirm);
+  on($deleteConfirmClose, 'click', closeDeleteConfirmModal);
+  on($deleteConfirmCancel, 'click', closeDeleteConfirmModal);
+  on($deleteConfirmOk, 'click', handleDeleteConfirm);
   $deleteConfirmModal && $deleteConfirmModal.addEventListener('click', function (e) {
     if (e.target === $deleteConfirmModal) closeDeleteConfirmModal();
   });
@@ -1286,11 +1188,11 @@
     });
   });
 
-  if ($removeFiltersBtn) $removeFiltersBtn.addEventListener('click', removeFilters);
-  if ($deleteAllBtn) $deleteAllBtn.addEventListener('click', deleteAllProjects);
-  if ($manageOptionsBtn) $manageOptionsBtn.addEventListener('click', openManageOptionsModal);
-  if ($selectToManage) $selectToManage.addEventListener('change', renderOptionsList);
-  if ($addOptionBtn) $addOptionBtn.addEventListener('click', function(e) {
+  on($removeFiltersBtn, 'click', removeFilters);
+  on($deleteAllBtn, 'click', deleteAllProjects);
+  on($manageOptionsBtn, 'click', openManageOptionsModal);
+  on($selectToManage, 'change', renderOptionsList);
+  on($addOptionBtn, 'click', function(e) {
     e.preventDefault();
     const value = ($newOptionValue.value || '').trim();
     const text = ($newOptionText.value || '').trim();
@@ -1308,7 +1210,7 @@
       renderOptionsList();
     }
   });
-  if ($manageOptionsSave) $manageOptionsSave.addEventListener('click', function(e) {
+  on($manageOptionsSave, 'click', function(e) {
     e.preventDefault();
     if (manageOptionsCurrentSelect) {
       var id = manageOptionsCurrentSelect.id;
@@ -1324,12 +1226,12 @@
     }
     closeManageOptionsModal();
   });
-  if ($manageOptionsClose) $manageOptionsClose.addEventListener('click', closeManageOptionsModal);
-  if ($manageOptionsCancel) $manageOptionsCancel.addEventListener('click', closeManageOptionsModal);
-  if ($editOptionClose) $editOptionClose.addEventListener('click', closeEditOptionModal);
-  if ($editOptionCancel) $editOptionCancel.addEventListener('click', closeEditOptionModal);
-  if ($editOptionSave) $editOptionSave.addEventListener('click', handleEditOptionSave);
-  if ($editOptionForm) $editOptionForm.addEventListener('submit', function(e) {
+  on($manageOptionsClose, 'click', closeManageOptionsModal);
+  on($manageOptionsCancel, 'click', closeManageOptionsModal);
+  on($editOptionClose, 'click', closeEditOptionModal);
+  on($editOptionCancel, 'click', closeEditOptionModal);
+  on($editOptionSave, 'click', handleEditOptionSave);
+  on($editOptionForm, 'submit', function(e) {
     e.preventDefault();
     handleEditOptionSave();
   });
@@ -1337,33 +1239,32 @@
     if (e.target === $editOptionModal) closeEditOptionModal();
   });
   // Allow Enter key to save in edit modal
-  if ($editOptionValue) $editOptionValue.addEventListener('keypress', function(e) {
+  on($editOptionValue, 'keypress', function(e) {
     if (e.key === 'Enter') handleEditOptionSave();
   });
-  if ($editOptionText) $editOptionText.addEventListener('keypress', function(e) {
+  on($editOptionText, 'keypress', function(e) {
     if (e.key === 'Enter') handleEditOptionSave();
   });
-  if ($deleteAllConfirmOk) $deleteAllConfirmOk.addEventListener('click', handleDeleteAllConfirm);
-  if ($deleteAllConfirmCancel) $deleteAllConfirmCancel.addEventListener('click', closeDeleteAllConfirmModal);
-  if ($deleteAllConfirmClose) $deleteAllConfirmClose.addEventListener('click', closeDeleteAllConfirmModal);
+  on($deleteAllConfirmOk, 'click', handleDeleteAllConfirm);
+  on($deleteAllConfirmCancel, 'click', closeDeleteAllConfirmModal);
+  on($deleteAllConfirmClose, 'click', closeDeleteAllConfirmModal);
   if ($manageOptionsModal) $manageOptionsModal.addEventListener('click', function(e) {
     if (e.target === $manageOptionsModal) closeManageOptionsModal();
   });
   if ($deleteAllConfirmModal) $deleteAllConfirmModal.addEventListener('click', function(e) {
     if (e.target === $deleteAllConfirmModal) closeDeleteAllConfirmModal();
   });
-  if ($exportBtn) $exportBtn.addEventListener('click', exportData);
-  if ($importBtn) $importBtn.addEventListener('click', function () { if ($importFileInput) $importFileInput.click(); });
-  if ($importFileInput) $importFileInput.addEventListener('change', handleImportFile);
+  on($exportBtn, 'click', exportData);
+  on($importBtn, 'click', function () { if ($importFileInput) $importFileInput.click(); });
+  on($importFileInput, 'change', handleImportFile);
 
 
-  if ($notificationClose) $notificationClose.addEventListener('click', closeNotificationModal);
-  if ($notificationOk) $notificationOk.addEventListener('click', closeNotificationModal);
+  on($notificationClose, 'click', closeNotificationModal);
+  on($notificationOk, 'click', closeNotificationModal);
   if ($notificationModal) $notificationModal.addEventListener('click', function(e) {
     if (e.target === $notificationModal) closeNotificationModal();
   });
 
-  initModalCategories();
   initSort();
   initCustomOptions();
   // initialize custom styled multi-select widgets
