@@ -192,7 +192,6 @@ export default function HomePage() {
                 <div className="form-group">
                   <label htmlFor="airdropTaskType">Task Type</label>
                   <select id="airdropTaskType" name="taskType" multiple size={4}>
-                    <option value="">â€”</option>
                     <option value="daily">Daily</option>
                     <option value="time-based">Time based</option>
                     <option value="quest">Quest</option>
@@ -218,7 +217,6 @@ export default function HomePage() {
                 <div className="form-group">
                   <label htmlFor="airdropConnectType">Connect Type</label>
                   <select id="airdropConnectType" name="connectType" multiple size={4}>
-                    <option value="">â€”</option>
                     <option value="evm">EVM</option>
                     <option value="gmail">Gmail</option>
                     <option value="google">Google</option>
@@ -265,7 +263,7 @@ export default function HomePage() {
                 <div className="form-group">
                   <label htmlFor="airdropRewardType">Reward Type</label>
                   <select id="airdropRewardType" name="rewardType" multiple size={4}>
-                    <option value="">â€”</option>
+                    <option value=""></option>
                     <option value="Airdrop">Airdrop</option>
                     <option value="Ambassador">Ambassador</option>
                     <option value="XP">XP</option>
@@ -386,7 +384,6 @@ export default function HomePage() {
                 <div className="form-group">
                   <label htmlFor="selectToManage">Field</label>
                   <select id="selectToManage" name="selectField">
-                    <option value="">â€”</option>
                     <option value="airdropTaskType">Task Type</option>
                     <option value="airdropConnectType">Connect Type</option>
                     <option value="airdropStatus">Status</option>

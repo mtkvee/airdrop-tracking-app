@@ -808,7 +808,7 @@ export function initApp() {
       taskTime: taskTimeEl ? taskTimeEl.value : '3',
       status: statusEl ? statusEl.value : 'potential',
       statusDate: statusDateEl ? statusDateEl.value : '',
-      rewardType: rewardTypeEl ? (rewardTypeEl.multiple ? Array.from(rewardTypeEl.selectedOptions).map(function(o){ return o.value; }) : rewardTypeEl.value) : ['Airdrop'],
+      rewardType: rewardTypeEl ? (rewardTypeEl.multiple ? Array.from(rewardTypeEl.selectedOptions).map(function(o){ return o.value; }) : rewardTypeEl.value) : [],
       raise: raiseEl ? raiseEl.value : '',
       raiseCount: raiseCountEl ? (raiseCountEl.value !== '' ? Number(raiseCountEl.value) : 0) : 0,
     };
