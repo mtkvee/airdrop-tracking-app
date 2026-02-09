@@ -1,13 +1,19 @@
-(function () {
+// @ts-nocheck
+export function initApp() {
   'use strict';
 
+  if (typeof window !== 'undefined') {
+    const w = window as any;
+    if (w.__airdropInit) return;
+    w.__airdropInit = true;
+  }
   const STORAGE_KEY = 'airdrop-tracker-data';
   const STORAGE_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
   let CUSTOM_OPTIONS = {};
   let LAST_UPDATED_AT = 0; // Track when data was last updated
 
   function byId(id) {
-    return document.getElementById(id);
+    return document.getElementById(id) as any;
   }
 
   function on(el, event, handler) {
@@ -298,19 +304,19 @@
     const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.potential;
     function getOptionText(selectId, val) {
       try {
-        const sel = byId(selectId);
+        const sel = byId(selectId) as HTMLSelectElement | null;
         if (!sel) return val || '';
         const opt = Array.from(sel.options).find(function(o){ return o.value === val; });
         return opt ? opt.text : (val != null ? String(val) : '');
       } catch (e) { return val || ''; }
     }
 
-    const taskTypeDisplay = (p.taskType && p.taskType.length) ? p.taskType.map(function(t){ return String(t).charAt(0).toUpperCase() + String(t).slice(1); }).join(', ') : '—';
+    const taskTypeDisplay = (p.taskType && p.taskType.length) ? p.taskType.map(function(t){ return String(t).charAt(0).toUpperCase() + String(t).slice(1); }).join(', ') : '--';
     const connectTypeDisplay = (p.connectType && p.connectType.length) ? p.connectType.map(function(c){
       // Use the display text from the form select if available to preserve casing
       const txt = getOptionText('airdropConnectType', c);
       return txt || String(c).toUpperCase();
-    }).join(', ') : '—';
+    }).join(', ') : '--';
     
     // Get status label from select options (respects custom edits)
     const statusLabel = getOptionText('airdropStatus', p.status) || statusCfg.label;
@@ -319,7 +325,7 @@
     const rewardTypeDisplay = (p.rewardType && p.rewardType.length) ? p.rewardType.map(function(r){
       const txt = getOptionText('airdropRewardType', r);
       return txt || r;
-    }).join(', ') : '—';
+    }).join(', ') : '--';
     
     const taskCellContent = p.noActiveTasks
       ? `<span class="no-tasks">No active tasks</span>`
@@ -341,7 +347,7 @@
           <div class="raise-avatars">${(p.logos || []).map((_, i) => `<span class="placeholder-logo" style="width:24px;height:24px;font-size:0.7rem;margin-left:${i === 0 ? 0 : -8}px">${String.fromCharCode(65 + i)}</span>`).join('')}</div>
           <span class="raise-count">+${p.raiseCount}</span>
         `
-        : '—';
+        : '--';
 
     return `
       <tr data-id="${p.id}">
@@ -1105,7 +1111,7 @@
         valuesSpan.textContent = selected.map(function(o){ return o.text; }).join(', ');
       } else {
         // show placeholder from first empty option
-        var placeholder = (sel.options && sel.options[0] && sel.options[0].value === '') ? sel.options[0].text : '—';
+        var placeholder = (sel.options && sel.options[0] && sel.options[0].value === '') ? sel.options[0].text : '--';
         valuesSpan.textContent = placeholder;
       }
       // update checkboxes in dropdown to reflect current selection
@@ -1248,7 +1254,7 @@
     if (manageOptionsCurrentSelect) {
       var id = manageOptionsCurrentSelect.id;
       var arr = Array.from(manageOptionsCurrentSelect.options).filter(function(o){ return o.value !== ''; }).map(function(o){ return { value: o.value, text: o.text }; });
-      // sort new options alphabetically A→Z by display text
+      // sort new options alphabetically A->Z by display text
       arr.sort(function(a,b){ return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' }); });
       CUSTOM_OPTIONS[id] = arr;
       saveToLocalStorage();
@@ -1310,4 +1316,7 @@
   // Update the relative time display every minute
   setInterval(updateLastUpdatedDisplay, 60000);
   applyFiltersFromState();
-})();
+}
+
+
+

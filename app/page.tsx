@@ -1,0 +1,542 @@
+'use client';
+
+import { useEffect } from 'react';
+import { initApp } from './legacy/initApp';
+
+export default function HomePage() {
+  useEffect(() => {
+    initApp();
+  }, []);
+
+  return (
+    <>
+      <h1 className="app-title">
+        Airdrop Tracker <span className="app-version">(v0.1)</span>
+      </h1>
+      <div className="social-icons">
+        <a className="social-icon" href="https://x.com/vee_mtk" target="_blank" rel="noreferrer">
+          <i className="fa-brands fa-x-twitter"></i>
+        </a>
+      </div>
+      <div className="app">
+        <header className="header">
+          <div className="header-right">
+            <div className="right-above">
+              <button type="button" className="btn-add-airdrop" id="addAirdropBtn" aria-label="Add airdrop">
+                <i className="fas fa-plus"></i> Add
+              </button>
+              <button
+                type="button"
+                className="btn-manage-options"
+                id="manageOptionsBtn"
+                aria-label="Manage select options"
+                title="Manage select options"
+              >
+                <i className="fa-solid fa-bars-progress"></i>
+              </button>
+              <button
+                type="button"
+                className="btn-delete-all"
+                id="deleteAllBtn"
+                aria-label="Delete all airdrops"
+                title="Delete all airdrops"
+              >
+                <i className="fas fa-trash"></i>
+              </button>
+            </div>
+            <div className="right-below">
+              <div className='data-import-export'>
+                <button
+                  type="button"
+                  className="btn-import-export"
+                  id="exportBtn"
+                  aria-label="Export airdrops"
+                  title="Export"
+                >
+                  <i className="fas fa-download"></i>
+                </button>
+                <button
+                  type="button"
+                  className="btn-import-export"
+                  id="importBtn"
+                  aria-label="Import airdrops"
+                  title="Import"
+                >
+                  <i className="fas fa-upload"></i>
+                </button>
+                <input type="file" id="importFileInput" accept=".json,application/json" hidden />
+              </div>
+              <div className="tabs">
+                <button type="button" className="tab tab-active" data-tab="all">
+                  All
+                </button>
+                <button type="button" className="tab" data-tab="newTasks">
+                  New Tasks
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="header-left">
+            <div className="search-wrap">
+              <i className="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search airdrops"
+                id="searchInput"
+              />
+            </div>
+            <div className="filter-bar">
+              <button
+                type="button"
+                className="btn-filters"
+                id="openFiltersBtn"
+                aria-label="Open filters"
+                title="Filters"
+              >
+                <i className="fas fa-sliders-h"></i>
+              </button>
+              <button
+                type="button"
+                className="btn-remove-filters"
+                id="removeFiltersBtn"
+                aria-label="Remove filters"
+                title="Remove filters"
+              >
+                <i className="fa-solid fa-filter-circle-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="main">
+          <div className="last-updated-section" id="lastUpdatedSection">
+            <i className="fas fa-sync-alt last-updated-icon"></i>
+            <span className="last-updated-text">
+              Last updated: <span id="lastUpdatedTime">Just now</span>
+            </span>
+          </div>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="col-name sortable" data-sort="name">
+                    Name <i className="fas fa-sort"></i>
+                  </th>
+                  <th className="col-task sortable" data-sort="task">
+                    Task Type
+                  </th>
+                  <th className="col-tasktype sortable" data-sort="connectType">
+                    Connect Type
+                  </th>
+                  <th className="col-status sortable" data-sort="status">
+                    Updated Status
+                  </th>
+                  <th className="col-reward sortable" data-sort="reward">
+                    Reward Type
+                  </th>
+                  <th className="col-raise sortable" data-sort="raise">
+                    Raise/Funds
+                  </th>
+                  <th className="col-actions col-actions-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+
+      <div className="modal-overlay" id="airdropFormModal" aria-hidden="true">
+        <div className="modal modal-form" role="dialog" aria-labelledby="airdropFormTitle">
+          <div className="modal-header">
+            <h2 id="airdropFormTitle" className="modal-title">
+              Add Airdrop
+            </h2>
+            <button type="button" className="modal-close" id="airdropFormClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body modal-body-form">
+            <form id="airdropForm" className="airdrop-form">
+              <input type="hidden" id="airdropId" name="id" defaultValue="" />
+              <div className="form-row two-cols">
+                <div className="form-group">
+                  <label htmlFor="airdropName">Name</label>
+                  <input
+                    type="text"
+                    id="airdropName"
+                    name="name"
+                    required
+                    placeholder="e.g. Infinex"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="airdropCode">Code</label>
+                  <input type="text" id="airdropCode" name="code" placeholder="e.g. INX" />
+                </div>
+              </div>
+              <div id="airdropFormError" className="form-error is-hidden" aria-live="assertive"></div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="airdropLink">Link</label>
+                  <input
+                    type="url"
+                    id="airdropLink"
+                    name="link"
+                    placeholder="e.g. https://infinex.io"
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="airdropTaskType">Task Type</label>
+                  <select id="airdropTaskType" name="taskType" multiple size={4}>
+                    <option value="">â€”</option>
+                    <option value="daily">Daily</option>
+                    <option value="time-based">Time based</option>
+                    <option value="quest">Quest</option>
+                    <option value="retro">Retro</option>
+                    <option value="galxe">Galxe</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input type="checkbox" id="airdropNoTasks" name="noActiveTasks" /> No active tasks
+                  </label>
+                </div>
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input type="checkbox" id="airdropIsNew" name="isNew" /> New badge
+                  </label>
+                </div>
+              </div>
+              <div className="form-section">Task details</div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="airdropConnectType">Connect Type</label>
+                  <select id="airdropConnectType" name="connectType" multiple size={4}>
+                    <option value="">â€”</option>
+                    <option value="evm">EVM</option>
+                    <option value="gmail">Gmail</option>
+                    <option value="google">Google</option>
+                    <option value="sol">SOL</option>
+                    <option value="discord">Discord</option>
+                    <option value="x">X</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row two-cols">
+                <div className="form-group">
+                  <label htmlFor="airdropTaskCost">Cost ($)</label>
+                  <input
+                    type="number"
+                    id="airdropTaskCost"
+                    name="taskCost"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="airdropTaskTime">Time (min)</label>
+                  <input type="number" id="airdropTaskTime" name="taskTime" min="0" placeholder="0" />
+                </div>
+              </div>
+
+              <div className="form-section">Status &amp; reward</div>
+              <div className="form-row two-cols">
+                <div className="form-group">
+                  <label htmlFor="airdropStatus">Status</label>
+                  <select id="airdropStatus" name="status">
+                    <option value="reward">Reward Available</option>
+                    <option value="potential">Potential</option>
+                    <option value="confirmed">Confirmed</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="airdropStatusDate">Status date</label>
+                  <input type="text" id="airdropStatusDate" name="statusDate" placeholder="31 Jan 2026" />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="airdropRewardType">Reward Type</label>
+                  <select id="airdropRewardType" name="rewardType" multiple size={4}>
+                    <option value="">â€”</option>
+                    <option value="Airdrop">Airdrop</option>
+                    <option value="Ambassador">Ambassador</option>
+                    <option value="XP">XP</option>
+                    <option value="Point">Point</option>
+                    <option value="NFT">NFT</option>
+                    <option value="Whitelist">Whitelist</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-section">Raise / funds</div>
+              <div className="form-row two-cols">
+                <div className="form-group">
+                  <label htmlFor="airdropRaise">Raise amount</label>
+                  <input type="text" id="airdropRaise" name="raise" placeholder="e.g. 72.49M" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="airdropRaiseCount">Raise count</label>
+                  <input
+                    type="number"
+                    id="airdropRaiseCount"
+                    name="raiseCount"
+                    min="0"
+                    defaultValue={0}
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="airdropFormCancel">
+              Cancel
+            </button>
+            <button type="submit" form="airdropForm" className="btn-apply">
+              Save Airdrop
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="filtersModal" aria-hidden="true">
+        <div className="modal modal-form" role="dialog" aria-labelledby="filtersTitle">
+          <div className="modal-header">
+            <h2 id="filtersTitle" className="modal-title">
+              Filters
+            </h2>
+            <button
+              type="button"
+              className="modal-close"
+              id="filtersClose"
+              aria-label="Close filters"
+              title="Close"
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div className="modal-body modal-body-form">
+            <div className="filter-modal-grid">
+              <label className="filter-modal-field">
+                <span>Task Type</span>
+                <select className="filter-select" id="taskFilter">
+                  <option value="">All</option>
+                  <option value="daily">Daily</option>
+                  <option value="time-based">Time based</option>
+                  <option value="quest">Quest</option>
+                  <option value="whitelist">Whitelist</option>
+                  <option value="retro">Retro</option>
+                  <option value="galxe">Galxe</option>
+                </select>
+              </label>
+              <label className="filter-modal-field">
+                <span>Connect Type</span>
+                <select className="filter-select" id="taskTypeFilter">
+                  <option value="">All</option>
+                  <option value="evm">EVM</option>
+                  <option value="gmail">Gmail</option>
+                  <option value="google">Google</option>
+                  <option value="sol">SOL</option>
+                  <option value="discord">Discord</option>
+                  <option value="x">X</option>
+                </select>
+              </label>
+              <label className="filter-modal-field">
+                <span>Status</span>
+                <select className="filter-select" id="statusFilter">
+                  <option value="">All</option>
+                  <option value="reward">Reward Available</option>
+                  <option value="potential">Potential</option>
+                  <option value="confirmed">Confirmed</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="filtersClear">
+              Clear
+            </button>
+            <button type="button" className="btn-apply" id="filtersDone">
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="manageOptionsModal" aria-hidden="true">
+        <div className="modal modal-form" role="dialog" aria-labelledby="manageOptionsTitle">
+          <div className="modal-header">
+            <h2 id="manageOptionsTitle" className="modal-title">
+              Manage Options
+            </h2>
+            <button type="button" className="modal-close" id="manageOptionsClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body modal-body-form">
+            <form id="manageOptionsForm" className="manage-options-form">
+              <div className="form-section">Select to Manage</div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="selectToManage">Field</label>
+                  <select id="selectToManage" name="selectField">
+                    <option value="">â€”</option>
+                    <option value="airdropTaskType">Task Type</option>
+                    <option value="airdropConnectType">Connect Type</option>
+                    <option value="airdropStatus">Status</option>
+                    <option value="airdropRewardType">Reward Type</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-section">Current Options</div>
+              <div className="form-group">
+                <div id="optionsList" className="options-list-container"></div>
+              </div>
+
+              <div className="form-section">Add New Option</div>
+              <div className="form-row two-cols">
+                <div className="form-group">
+                  <label htmlFor="newOptionValue">Value</label>
+                  <input type="text" id="newOptionValue" name="newOptionValue" placeholder="e.g. quest" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="newOptionText">Display Text</label>
+                  <input type="text" id="newOptionText" name="newOptionText" placeholder="e.g. Quest" />
+                </div>
+              </div>
+              <p className="add-option-message">Fill Value &amp; Display Text first, then click "Add Option".</p>
+              <button type="button" className="btn-secondary" id="addOptionBtn">
+                <i className="fas fa-plus"></i> Add Option
+              </button>
+            </form>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="manageOptionsCancel">
+              Cancel
+            </button>
+            <button type="button" className="btn-apply" id="manageOptionsSave">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="editOptionModal" aria-hidden="true">
+        <div className="modal modal-form" role="dialog" aria-labelledby="editOptionTitle">
+          <div className="modal-header">
+            <h2 id="editOptionTitle" className="modal-title">
+              Edit Option
+            </h2>
+            <button type="button" className="modal-close" id="editOptionClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body modal-body-form">
+            <form id="editOptionForm" className="edit-option-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="editOptionValue">Value</label>
+                  <input type="text" id="editOptionValue" name="editOptionValue" placeholder="e.g. quest" />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="editOptionText">Display Text</label>
+                  <input type="text" id="editOptionText" name="editOptionText" placeholder="e.g. Quest" />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="editOptionCancel">
+              Cancel
+            </button>
+            <button type="button" className="btn-apply" id="editOptionSave">
+              Update Option
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="deleteAllConfirmModal" aria-hidden="true">
+        <div className="modal" role="dialog" aria-labelledby="deleteAllConfirmTitle">
+          <div className="modal-header">
+            <h2 id="deleteAllConfirmTitle" className="modal-title">
+              Delete All Airdrops
+            </h2>
+            <button type="button" className="modal-close" id="deleteAllConfirmClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body">
+            <p id="deleteAllConfirmMessage">
+              Are you sure you want to delete all airdrops? This action cannot be undone.
+            </p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="deleteAllConfirmCancel">
+              Cancel
+            </button>
+            <button type="button" className="btn-danger" id="deleteAllConfirmOk">
+              <i className="fas fa-trash-alt"></i> Delete All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="deleteConfirmModal" aria-hidden="true">
+        <div className="modal modal-sm" role="dialog" aria-labelledby="deleteConfirmTitle">
+          <div className="modal-header">
+            <h2 id="deleteConfirmTitle" className="modal-title">
+              Delete airdrop?
+            </h2>
+            <button type="button" className="modal-close" id="deleteConfirmClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body">
+            <p id="deleteConfirmMessage">
+              This will remove the airdrop from the list. This action cannot be undone.
+            </p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="deleteConfirmCancel">
+              Cancel
+            </button>
+            <button type="button" className="btn-danger" id="deleteConfirmOk">
+              <i className="fas fa-trash-alt"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal-overlay" id="notificationModal" aria-hidden="true">
+        <div className="modal modal-sm" role="dialog" aria-labelledby="notificationTitle">
+          <div className="modal-header">
+            <h2 id="notificationTitle" className="modal-title">
+              Notification
+            </h2>
+            <button type="button" className="modal-close" id="notificationClose" aria-label="Close">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body">
+            <p id="notificationMessage">Message</p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-apply" id="notificationOk">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

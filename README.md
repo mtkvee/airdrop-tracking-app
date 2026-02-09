@@ -1,5 +1,14 @@
 # Airdrop Tracking App
 
-This is a simple front-end application to track airdrop opportunities.
+A Next.js app to track airdrop opportunities.
 
-Read USER_MANUAL.md for the full usages.
+## Requirements
+1. Node.js 18+.
+
+## Local Development
+1. `npm install`
+2. `npm run dev`
+3. Open `http://localhost:3000`
+
+## Notes
+- Global styles are loaded from `app/globals.css`.
