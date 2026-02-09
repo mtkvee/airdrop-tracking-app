@@ -1,20 +1,38 @@
-# Airdrop Tracking App
+# Airdrop Tracer
 
-A Next.js app to track airdrop opportunities.
+Airdrop Tracer helps crypto users track, verify, and organize airdrops across wallets with a calm, reliable experience. The product focus is clarity.
 
-## Requirements
-1. Node.js 18+.
+## UX Goals
+- **Reduce uncertainty**: Surface eligibility signals and required actions in plain language.
+- **Minimize cognitive load**: Keep lists scannable, emphasize status, and hide clutter.
+- **Build trust**: Make data sources and updates obvious, and keep a clean audit trail.
+- **Stay lightweight**: Fast load, responsive on mobile, no unnecessary steps.
 
-## Local Development
-1. `npm install`
-2. `npm run dev`
-3. Open `http://localhost:3000`
+## Core User Flow
 
-## Firebase (Google sign-in + cloud sync)
-1. Create a Firebase project and enable Google sign-in in Authentication.
-2. Create a Firestore database (production or test mode).
-3. Copy `.env.example` to `.env.local` and fill in your Firebase web app config values.
-4. Do **not** create a `.npm` file. `.npmrc` is only for npm config (registries/tokens) and is not used for env vars.
+1. **See airdrop status at a glance**
+   A clear status system.
+
+## Feature Overview (Function Explanations)
+- **History log**: Keep a clear record of past airdrops and actions taken.
+- **Fast search and filters**: Narrow to new, expiring, or action-required items quickly.
+
+## Tech Stack
+- **Next.js** for the web app framework
+- **React** for UI
+- **Firebase** for data and configuration
+- **Vercel Speed Insights** for performance metrics
+
+## Getting Started
+```bash
+npm install
+npm run dev
+```
+
+## Scripts
+- `npm run dev` � start the dev server
+- `npm run build` � build for production
+- `npm run start` � run the production server
 
 ## Notes
-- Global styles are loaded from `app/globals.css`.
+This project is optimized for clear UX and fast decision-making. If you add new features, keep the status system and primary actions simple and consistent.
