@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
-  title: 'Airdrop Tracker',
-  description: 'Airdrop Tracker - Track your crypto airdrops easily',
-  keywords: ['airdrop', 'crypto', 'tracker', 'blockchain', 'rewards', 'web3', 'tracking app', 'vee'],
+  title: 'Airdrop Tracer by Vee',
+  description: 'Track, verify, and organize crypto airdrops with clean history.',
+  keywords: ['airdrop', 'crypto', 'tracer', 'blockchain', 'rewards', 'web3', 'tracking app', 'vee'],
   authors: [{ name: 'Vee' }],
   icons: {
     apple: '/favicon/apple-touch-icon.png',
