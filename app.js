@@ -108,6 +108,11 @@
   const $taskTypeFilter = byId('taskTypeFilter');
   const $statusFilter = byId('statusFilter');
   const $addAirdropBtn = byId('addAirdropBtn');
+  const $openFiltersBtn = byId('openFiltersBtn');
+  const $filtersModal = byId('filtersModal');
+  const $filtersClose = byId('filtersClose');
+  const $filtersDone = byId('filtersDone');
+  const $filtersClear = byId('filtersClear');
   const $airdropFormModal = byId('airdropFormModal');
   const $airdropForm = byId('airdropForm');
   const $airdropFormClose = byId('airdropFormClose');
@@ -272,6 +277,14 @@
 
   function closeDeleteAllConfirmModal() {
     setModalState($deleteAllConfirmModal, false);
+  }
+
+  function openFiltersModal() {
+    setModalState($filtersModal, true);
+  }
+
+  function closeFiltersModal() {
+    setModalState($filtersModal, false);
   }
 
   function handleDeleteAllConfirm() {
@@ -1150,6 +1163,14 @@
   }
 
   on($searchInput, 'input', applyFiltersFromState);
+  on($searchInput, 'keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$searchInput.value) return;
+    e.preventDefault();
+    e.stopPropagation();
+    $searchInput.value = '';
+    $searchInput.dispatchEvent(new Event('input'));
+  });
   on($taskFilter, 'change', applyFiltersFromState);
   on($taskTypeFilter, 'change', applyFiltersFromState);
   on($statusFilter, 'change', applyFiltersFromState);
@@ -1158,6 +1179,18 @@
     if (e.key !== 'Escape') return;
     if ($airdropFormModal && $airdropFormModal.classList.contains('open')) closeAirdropFormModal();
     else if ($deleteConfirmModal && $deleteConfirmModal.classList.contains('open')) closeDeleteConfirmModal();
+    else if ($filtersModal && $filtersModal.classList.contains('open')) closeFiltersModal();
+    else if ($manageOptionsModal && $manageOptionsModal.classList.contains('open')) closeManageOptionsModal();
+    else if ($deleteAllConfirmModal && $deleteAllConfirmModal.classList.contains('open')) closeDeleteAllConfirmModal();
+    else if ($notificationModal && $notificationModal.classList.contains('open')) closeNotificationModal();
+  });
+
+  on($openFiltersBtn, 'click', openFiltersModal);
+  on($filtersClose, 'click', closeFiltersModal);
+  on($filtersDone, 'click', closeFiltersModal);
+  on($filtersClear, 'click', removeFilters);
+  $filtersModal && $filtersModal.addEventListener('click', function (e) {
+    if (e.target === $filtersModal) closeFiltersModal();
   });
 
   on($addAirdropBtn, 'click', function () {

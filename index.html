@@ -49,9 +49,6 @@
       Airdrop Tracker <span class="app-version">(v0.1)</span>
     </h1>
     <div class="social-icons">
-      <a class="social-icon" href="https://t.me/mgveec" target="_blank"
-        ><i class="fa-brands fa-telegram"></i
-      ></a>
       <a class="social-icon" href="https://x.com/vee_mtk" target="_blank"
         ><i class="fa-brands fa-x-twitter"></i
       ></a>
@@ -76,7 +73,7 @@
               aria-label="Manage select options"
               title="Manage select options"
             >
-              <i class="fas fa-sliders-h"></i>
+              <i class="fa-solid fa-bars-progress"></i>
             </button>
             <button
               type="button"
@@ -131,42 +128,26 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Filter projects"
+              placeholder="Search airdrops"
               id="searchInput"
             />
-            <i class="fas fa-chevron-down search-dropdown"></i>
           </div>
           <div class="filter-bar">
-            <select class="filter-select" id="taskFilter">
-              <option value="">Task Type</option>
-              <option value="daily">Daily</option>
-              <option value="time-based">Time based</option>
-              <option value="quest">Quest</option>
-              <option value="whitelist">Whitelist</option>
-              <option value="retro">Retro</option>
-              <option value="galxe">Galxe</option>
-            </select>
-            <select class="filter-select" id="taskTypeFilter">
-              <option value="">Connect Type</option>
-              <option value="evm">EVM</option>
-              <option value="gmail">Gmail</option>
-              <option value="google">Google</option>
-              <option value="sol">SOL</option>
-              <option value="discord">Discord</option>
-              <option value="x">X</option>
-            </select>
-            <select class="filter-select" id="statusFilter">
-              <option value="">Status</option>
-              <option value="reward">Reward Available</option>
-              <option value="potential">Potential</option>
-              <option value="confirmed">Confirmed</option>
-            </select>
+            <button
+              type="button"
+              class="btn-filters"
+              id="openFiltersBtn"
+              aria-label="Open filters"
+              title="Filters"
+            >
+              <i class="fas fa-sliders-h"></i>
+            </button>
             <button
               type="button"
               class="btn-remove-filters"
               id="removeFiltersBtn"
-              aria-label="Remove all filters"
-              title="Remove all filters"
+              aria-label="Remove filters"
+              title="Remove filters"
             >
               <i class="fa-solid fa-filter-circle-xmark"></i>
             </button>
@@ -420,6 +401,71 @@
       </div>
     </div>
 
+    <!-- Filters modal -->
+    <div class="modal-overlay" id="filtersModal" aria-hidden="true">
+      <div
+        class="modal modal-form"
+        role="dialog"
+        aria-labelledby="filtersTitle"
+      >
+        <div class="modal-header">
+          <h2 id="filtersTitle" class="modal-title">Filters</h2>
+          <button
+            type="button"
+            class="modal-close"
+            id="filtersClose"
+            aria-label="Close filters"
+            title="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body modal-body-form">
+          <div class="filter-modal-grid">
+            <label class="filter-modal-field">
+              <span>Task Type</span>
+              <select class="filter-select" id="taskFilter">
+                <option value="">All</option>
+                <option value="daily">Daily</option>
+                <option value="time-based">Time based</option>
+                <option value="quest">Quest</option>
+                <option value="whitelist">Whitelist</option>
+                <option value="retro">Retro</option>
+                <option value="galxe">Galxe</option>
+              </select>
+            </label>
+            <label class="filter-modal-field">
+              <span>Connect Type</span>
+              <select class="filter-select" id="taskTypeFilter">
+                <option value="">All</option>
+                <option value="evm">EVM</option>
+                <option value="gmail">Gmail</option>
+                <option value="google">Google</option>
+                <option value="sol">SOL</option>
+                <option value="discord">Discord</option>
+                <option value="x">X</option>
+              </select>
+            </label>
+            <label class="filter-modal-field">
+              <span>Status</span>
+              <select class="filter-select" id="statusFilter">
+                <option value="">All</option>
+                <option value="reward">Reward Available</option>
+                <option value="potential">Potential</option>
+                <option value="confirmed">Confirmed</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="filtersClear">
+            Clear
+          </button>
+          <button type="button" class="btn-apply" id="filtersDone">Done</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Manage Select Options Modal -->
     <div class="modal-overlay" id="manageOptionsModal" aria-hidden="true">
       <div
@@ -428,9 +474,7 @@
         aria-labelledby="manageOptionsTitle"
       >
         <div class="modal-header">
-          <h2 id="manageOptionsTitle" class="modal-title">
-            Manage Select Options
-          </h2>
+          <h2 id="manageOptionsTitle" class="modal-title">Manage Options</h2>
           <button
             type="button"
             class="modal-close"
