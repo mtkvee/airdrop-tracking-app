@@ -161,11 +161,6 @@ export function initApp() {
   const $exportBtn = byId('exportBtn');
   const $importBtn = byId('importBtn');
   const $importFileInput = byId('importFileInput');
-  const $notificationModal = byId('notificationModal');
-  const $notificationTitle = byId('notificationTitle');
-  const $notificationMessage = byId('notificationMessage');
-  const $notificationClose = byId('notificationClose');
-  const $notificationOk = byId('notificationOk');
   const $lastUpdatedTime = byId('lastUpdatedTime');
   const $signInBtn = byId('signInBtn');
   const $signOutBtn = byId('signOutBtn');
@@ -183,6 +178,15 @@ export function initApp() {
   const $statusCountDropdown = byId('statusCountDropdown');
   const $statusCountTrigger = byId('statusCountTrigger');
   const $statusCountMenu = byId('statusCountMenu');
+  let AUTH_STATUS_LAST_KEY = '';
+  let AUTH_STATUS_HIDE_TIMER = null;
+  const AUTH_STATUS_HIDE_MS = 1500;
+  const AUTH_STATUS_QUEUE_GAP_MS = 120;
+  const AUTH_STATUS_DEDUPE_WINDOW_MS = 4000;
+  let AUTH_STATUS_QUEUE = [];
+  let AUTH_STATUS_IS_SHOWING = false;
+  let AUTH_STATUS_LAST_SHOWN_KEY = '';
+  let AUTH_STATUS_LAST_SHOWN_AT = 0;
 
   function updateLastUpdatedTime() {
     LAST_UPDATED_AT = Date.now();
@@ -252,6 +256,8 @@ export function initApp() {
     if (!trigger) return;
     const value = trigger.getAttribute('data-filter-value') || '';
     const type = trigger.getAttribute('data-filter-type') || '';
+    const labelNode = trigger.querySelector('.task-count-label');
+    const selectedLabel = labelNode ? (labelNode.textContent || '').trim() : 'All';
     if (type === 'task' && $taskFilter) {
       $taskFilter.value = value;
       $taskFilter.dispatchEvent(new Event('change'));
@@ -262,18 +268,14 @@ export function initApp() {
       $statusFilter.value = value;
       $statusFilter.dispatchEvent(new Event('change'));
     }
+    setAuthStatus('Filter as ' + selectedLabel, 'success', true);
     closeAllCounterDropdowns();
   }
 
-  function setAuthStatus(message, tone) {
+  function applyAuthStatus(message, tone) {
     if ($authStatusBar) {
-      if (message) {
-        if ($authStatusText) $authStatusText.textContent = message;
-        $authStatusBar.classList.remove('is-hidden');
-      } else {
-        if ($authStatusText) $authStatusText.textContent = '';
-        $authStatusBar.classList.add('is-hidden');
-      }
+      if ($authStatusText) $authStatusText.textContent = message;
+      $authStatusBar.classList.remove('is-hidden');
       $authStatusBar.classList.remove('auth-status--muted', 'auth-status--success', 'auth-status--error');
       if (tone) $authStatusBar.classList.add('auth-status--' + tone);
     }
@@ -282,6 +284,68 @@ export function initApp() {
       if (tone === 'success') iconClass = 'fa-circle-check';
       else if (tone === 'error') iconClass = 'fa-circle-xmark';
       $authStatusIcon.innerHTML = '<i class="fas ' + iconClass + '"></i>';
+    }
+  }
+
+  function showImmediateAuthStatus(message, tone) {
+    AUTH_STATUS_QUEUE = [];
+    AUTH_STATUS_IS_SHOWING = true;
+    if (AUTH_STATUS_HIDE_TIMER) {
+      clearTimeout(AUTH_STATUS_HIDE_TIMER);
+      AUTH_STATUS_HIDE_TIMER = null;
+    }
+    applyAuthStatus(message, tone);
+    AUTH_STATUS_LAST_KEY = (message || '') + '::' + (tone || '');
+    AUTH_STATUS_LAST_SHOWN_KEY = AUTH_STATUS_LAST_KEY;
+    AUTH_STATUS_LAST_SHOWN_AT = Date.now();
+    AUTH_STATUS_HIDE_TIMER = setTimeout(function () {
+      if ($authStatusBar) $authStatusBar.classList.add('is-hidden');
+      AUTH_STATUS_HIDE_TIMER = null;
+      AUTH_STATUS_IS_SHOWING = false;
+    }, AUTH_STATUS_HIDE_MS);
+  }
+
+  function consumeAuthStatusQueue() {
+    if (!AUTH_STATUS_QUEUE.length) {
+      AUTH_STATUS_IS_SHOWING = false;
+      return;
+    }
+    AUTH_STATUS_IS_SHOWING = true;
+    var item = AUTH_STATUS_QUEUE.shift();
+    applyAuthStatus(item.message, item.tone);
+    AUTH_STATUS_LAST_SHOWN_KEY = item.key || '';
+    AUTH_STATUS_LAST_SHOWN_AT = Date.now();
+    if (AUTH_STATUS_HIDE_TIMER) clearTimeout(AUTH_STATUS_HIDE_TIMER);
+    AUTH_STATUS_HIDE_TIMER = setTimeout(function () {
+      if ($authStatusBar) $authStatusBar.classList.add('is-hidden');
+      AUTH_STATUS_HIDE_TIMER = null;
+      setTimeout(function () {
+        consumeAuthStatusQueue();
+      }, AUTH_STATUS_QUEUE_GAP_MS);
+    }, AUTH_STATUS_HIDE_MS);
+  }
+
+  function setAuthStatus(message, tone, forceShow) {
+    const nextKey = (message || '') + '::' + (tone || '');
+    if (!message) {
+      AUTH_STATUS_LAST_KEY = '';
+      AUTH_STATUS_QUEUE = [];
+      AUTH_STATUS_IS_SHOWING = false;
+      if (AUTH_STATUS_HIDE_TIMER) {
+        clearTimeout(AUTH_STATUS_HIDE_TIMER);
+        AUTH_STATUS_HIDE_TIMER = null;
+      }
+      if ($authStatusText) $authStatusText.textContent = '';
+      if ($authStatusBar) $authStatusBar.classList.add('is-hidden');
+      return;
+    }
+    if (!forceShow && nextKey === AUTH_STATUS_LAST_KEY) return;
+    if (!forceShow && nextKey === AUTH_STATUS_LAST_SHOWN_KEY && (Date.now() - AUTH_STATUS_LAST_SHOWN_AT) < AUTH_STATUS_DEDUPE_WINDOW_MS) return;
+    if (!forceShow && AUTH_STATUS_QUEUE.some(function (item) { return item.key === nextKey; })) return;
+    AUTH_STATUS_LAST_KEY = nextKey;
+    AUTH_STATUS_QUEUE.push({ key: nextKey, message: message, tone: tone });
+    if (!AUTH_STATUS_IS_SHOWING) {
+      consumeAuthStatusQueue();
     }
   }
 
@@ -348,7 +412,6 @@ export function initApp() {
     if (!ref) return;
     try {
       CLOUD_SYNCING = true;
-      setAuthStatus('Cloud syncing', 'muted');
       await setDoc(
         ref,
         {
@@ -483,6 +546,7 @@ export function initApp() {
     updateLastUpdatedTime();
     applyFiltersFromState();
     queueCloudSave(buildPayload());
+    setAuthStatus('Added', 'success', true);
   }
 
   function updateProject(id, data) {
@@ -496,6 +560,7 @@ export function initApp() {
     updateLastUpdatedTime();
     applyFiltersFromState();
     queueCloudSave(buildPayload());
+    setAuthStatus('Edited', 'success', true);
   }
 
   function deleteProject(id) {
@@ -505,6 +570,7 @@ export function initApp() {
     updateLastUpdatedTime();
     applyFiltersFromState();
     queueCloudSave(buildPayload());
+    setAuthStatus('Deleted', 'success', true);
   }
 
   function deleteAllProjects() {
@@ -529,6 +595,7 @@ export function initApp() {
     applyFiltersFromState();
     queueCloudSave(buildPayload());
     closeDeleteAllConfirmModal();
+    setAuthStatus('Deleted All', 'success', true);
   }
 
   function renderProjectRow(p) {
@@ -659,7 +726,9 @@ export function initApp() {
 
   function renderTable() {
     if (!$tableBody) return;
-    const nextHtml = filteredProjects.map(renderProjectRow).join('');
+    const nextHtml = filteredProjects.length
+      ? filteredProjects.map(renderProjectRow).join('')
+      : '<tr class="no-data-row"><td class="no-data-cell" colspan="6">No airdrops found. Click "<strong>New</strong>" to add one, or clear filters to see all.</td></tr>';
     if (nextHtml === LAST_TABLE_HTML) return;
     LAST_TABLE_HTML = nextHtml;
     $tableBody.innerHTML = nextHtml;
@@ -941,7 +1010,7 @@ export function initApp() {
     var newText = ($editOptionText && $editOptionText.value || '').trim();
 
     if (!newValue || !newText) {
-      showNotification('Error', 'Value and text cannot be empty.');
+      setAuthStatus('Value and text cannot be empty.', 'error', true);
       return;
     }
 
@@ -1093,7 +1162,7 @@ export function initApp() {
     try {
       const el = byId('airdropFormError');
       if (!el) {
-        showNotification('Error', msg);
+        setAuthStatus(msg, 'error', true);
         return;
       }
       el.textContent = msg;
@@ -1112,17 +1181,6 @@ export function initApp() {
       el.classList.add('is-hidden');
       el.style.display = 'none';
     } catch (e) {}
-  }
-
-  function showNotification(title, message) {
-    if (!$notificationModal) return;
-    if ($notificationTitle) $notificationTitle.textContent = title;
-    if ($notificationMessage) $notificationMessage.textContent = message;
-    setModalState($notificationModal, true);
-  }
-
-  function closeNotificationModal() {
-    setModalState($notificationModal, false);
   }
 
   function openDeleteConfirmModal(id) {
@@ -1148,6 +1206,11 @@ export function initApp() {
   }
 
   function removeFilters() {
+    var hadAnyFilter = false;
+    if ($taskFilter && $taskFilter.value) hadAnyFilter = true;
+    if ($taskTypeFilter && $taskTypeFilter.value) hadAnyFilter = true;
+    if ($statusFilter && $statusFilter.value) hadAnyFilter = true;
+    if ($searchInput && $searchInput.value) hadAnyFilter = true;
     if ($taskFilter) {
       $taskFilter.value = '';
       $taskFilter.dispatchEvent(new Event('change'));
@@ -1165,6 +1228,7 @@ export function initApp() {
       $searchInput.dispatchEvent(new Event('input'));
     }
     applyFiltersFromState();
+    if (hadAnyFilter) setAuthStatus('Removed filters', 'muted', true);
   }
 
   function exportData() {
@@ -1207,7 +1271,7 @@ export function initApp() {
         const parsed = JSON.parse(ev.target.result);
         importData(parsed);
       } catch (err) {
-        showNotification('Import Error', 'Invalid JSON file. Please check the file format.');
+        setAuthStatus('Invalid JSON file. Please check the file format.', 'error', true);
       }
       if ($importFileInput) $importFileInput.value = '';
     };
@@ -1405,7 +1469,6 @@ export function initApp() {
     else if ($filtersModal && $filtersModal.classList.contains('open')) closeFiltersModal();
     else if ($manageOptionsModal && $manageOptionsModal.classList.contains('open')) closeManageOptionsModal();
     else if ($deleteAllConfirmModal && $deleteAllConfirmModal.classList.contains('open')) closeDeleteAllConfirmModal();
-    else if ($notificationModal && $notificationModal.classList.contains('open')) closeNotificationModal();
   });
 
   on($openFiltersBtn, 'click', openFiltersModal);
@@ -1447,7 +1510,7 @@ export function initApp() {
     const value = ($newOptionValue.value || '').trim();
     const text = ($newOptionText.value || '').trim();
     if (!value || !text) {
-      showNotification('Missing Fields', 'Please enter both value and display text.');
+      setAuthStatus('Please enter both value and display text.', 'error', true);
       return;
     }
     if (manageOptionsCurrentSelect) {
@@ -1473,6 +1536,7 @@ export function initApp() {
       // Refresh custom widgets and re-render table with updated options
       try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
       applyFiltersFromState(); // Update table display with new option values
+      setAuthStatus('Changed options', 'success', true);
     }
     closeManageOptionsModal();
   });
@@ -1514,8 +1578,7 @@ export function initApp() {
         }
       })
       .catch(function () {
-        setAuthStatus('Google sign-in failed', 'error');
-        showNotification('Sign-in Error', 'Please try again');
+        showImmediateAuthStatus('Google sign-in failed', 'error');
       });
   });
   on($signOutBtn, 'click', function () {
@@ -1523,14 +1586,8 @@ export function initApp() {
     LAST_SIGNED_OUT_AT = Date.now();
     signOut(CLOUD_AUTH).catch(function () {
       setAuthStatus('Sign-out failed', 'error');
-      showNotification('Sign-out Error', 'Please try again.');
     });
   });
-
-
-  on($notificationClose, 'click', closeNotificationModal);
-  on($notificationOk, 'click', closeNotificationModal);
-  bindOverlayClose($notificationModal, closeNotificationModal);
   function toggleCounterDropdown(dropdownEl, triggerEl) {
     if (!dropdownEl || !triggerEl) return;
     const willOpen = !dropdownEl.classList.contains('open');

@@ -710,36 +710,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="modal-overlay" id="notificationModal" aria-hidden="true">
-        <div
-          className="modal modal-sm"
-          role="dialog"
-          aria-labelledby="notificationTitle"
-        >
-          <div className="modal-header">
-            <h2 id="notificationTitle" className="modal-title">
-              Notification
-            </h2>
-            <button
-              type="button"
-              className="modal-close"
-              id="notificationClose"
-              aria-label="Close"
-            >
-              <i className="fas fa-times"></i>
-            </button>
-          </div>
-          <div className="modal-body">
-            <p id="notificationMessage">Message</p>
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn-apply" id="notificationOk">
-              OK
-            </button>
-          </div>
-        </div>
-      </div>
-
       <button
         type="button"
         className="back-to-top"

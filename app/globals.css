@@ -387,34 +387,52 @@ button {
 }
 
 .auth-status-banner {
-  position: sticky;
-  top: 0;
-  z-index: 1200;
-  width: 100%;
-  padding: 0.6rem 1rem;
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  z-index: 1400;
+  max-width: min(420px, calc(100vw - 28px));
+  padding: 0.7rem 1.5rem;
   font-size: 0.85rem;
   font-weight: 600;
   background: var(--color-surface);
   color: var(--color-text);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
+  left: 50%;
+  right: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    visibility 0.22s ease;
+}
+
+.auth-status-banner.is-hidden {
+  display: flex !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 18px);
+  pointer-events: none;
 }
 
 .auth-status {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.6rem;
-  min-width: 0;
+  width: 100%;
 }
 
 .auth-status-text {
-  font-weight: 500;
-  text-align: center;
+  font-weight: 600;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -434,14 +452,20 @@ button {
 
 .auth-status-banner.auth-status--success {
   color: var(--color-success);
+  border-color: rgba(52, 199, 89, 0.35);
+  background: #f5fff8;
 }
 
 .auth-status-banner.auth-status--error {
   color: var(--color-danger);
+  border-color: rgba(255, 59, 48, 0.35);
+  background: #fff6f6;
 }
 
 .auth-status-banner.auth-status--muted {
   color: var(--color-muted);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .auth-status-banner.auth-status--success .auth-status-icon {
@@ -803,6 +827,17 @@ button {
 
 .data-table tbody tr:hover {
   background: var(--color-surface-muted);
+}
+
+.data-table tbody tr.no-data-row:hover {
+  background: transparent;
+}
+
+.no-data-cell {
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  padding: 2rem 1rem !important;
 }
 
 /* Column: Name */
