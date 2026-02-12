@@ -1285,6 +1285,11 @@ button {
   flex: 1;
 }
 
+.modal-body p {
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
 .modal-footer {
   display: flex;
   align-items: center;

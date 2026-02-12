@@ -568,7 +568,11 @@ export default function HomePage() {
         id="resetOptionsConfirmModal"
         aria-hidden="true"
       >
-        <div className="modal modal-sm" role="dialog" aria-labelledby="resetOptionsConfirmTitle">
+        <div
+          className="modal modal-sm"
+          role="dialog"
+          aria-labelledby="resetOptionsConfirmTitle"
+        >
           <div className="modal-header">
             <h2 id="resetOptionsConfirmTitle" className="modal-title">
               Reset All Options?
@@ -584,14 +588,23 @@ export default function HomePage() {
           </div>
           <div className="modal-body">
             <p>
-              This will delete all options in Task, Connect, Status, Reward, and Sub Link Type.
+              This will delete all options in Task, Connect, Status, Reward, and
+              Sub link.
             </p>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn-secondary" id="resetOptionsConfirmCancel">
+            <button
+              type="button"
+              className="btn-secondary"
+              id="resetOptionsConfirmCancel"
+            >
               Cancel
             </button>
-            <button type="button" className="btn-danger" id="resetOptionsConfirmOk">
+            <button
+              type="button"
+              className="btn-danger"
+              id="resetOptionsConfirmOk"
+            >
               <i className="fas fa-trash-alt"></i> Reset
             </button>
           </div>

@@ -762,7 +762,7 @@ export function initApp() {
     if (!$tableBody) return;
     const nextHtml = filteredProjects.length
       ? filteredProjects.map(renderProjectRow).join('')
-      : '<tr class="no-data-row"><td class="no-data-cell" colspan="6"><div class="empty-state-card"><div class="empty-state-title">No airdrops yet.</div><div class="empty-state-copy">First, add options (Task, Connect, Status, Reward, Sub link), then create your first drop.</div><button type="button" class="btn-secondary empty-state-manage-btn" data-action="open-manage-options"><i class="fa-solid fa-bars-progress"></i>&nbsp;&nbsp;Manage</button></div></td></tr>';
+      : '<tr class="no-data-row"><td class="no-data-cell" colspan="6"><div class="empty-state-card"><div class="empty-state-title">No airdrops yet.</div><div class="empty-state-copy">First, add options (Task, Connect, Status, Reward, Sub link), then create your first drop .</div><button type="button" class="btn-secondary empty-state-manage-btn" data-action="open-manage-options"><i class="fa-solid fa-bars-progress"></i>&nbsp;&nbsp;Manage Options</button></div></td></tr>';
     if (nextHtml === LAST_TABLE_HTML) return;
     LAST_TABLE_HTML = nextHtml;
     $tableBody.innerHTML = nextHtml;
