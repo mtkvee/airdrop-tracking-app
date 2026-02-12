@@ -670,22 +670,23 @@ export function initApp() {
       `;
     const sideLinksHtml = sideLinks.length
       ? sideLinks.map(function (x) {
-          return '<a href="' + x.href + '" target="_blank" rel="noopener noreferrer" class="side-link-chip"><i class="' + x.icon + '"></i><span>' + escapeHtml(x.label) + '</span></a>';
+          return '<a href="' + x.href + '" target="_blank" rel="noopener noreferrer" class="side-link-chip" aria-label="' + escapeHtml(x.label) + '" title="' + escapeHtml(x.label) + '"><i class="' + x.icon + '"></i></a>';
         }).join('')
       : '<span class="side-links-empty">No side links</span>';
+    const moreButtonHtml = sideLinks.length
+      ? '<button type="button" class="btn-action more btn-more-inline ' + (expanded ? 'is-open' : '') + '" aria-label="More links" aria-expanded="' + (expanded ? 'true' : 'false') + '" data-id="' + p.id + '" data-action="more">' + (expanded ? 'Less <i class="fa-solid fa-chevron-up"></i>' : 'More <i class="fa-solid fa-chevron-down"></i>') + '</button>'
+      : '';
     return `
       <tr data-id="${p.id}">
         <td class="col-name">
           <div class="cell-name">
-            <button type="button" class="star-btn ${p.favorite ? 'favorited' : ''}" aria-label="Toggle favorite" data-id="${p.id}">
-              <i class="${p.favorite ? 'fas' : 'far'} fa-star"></i>
-            </button>
+            <span class="name-prefix-icon" aria-hidden="true"><i class="fa-solid fa-circle-notch"></i></span>
             <div class="project-info">
               <div class="project-name-row">
                 <a href="${safeLink || '#'}" target="_blank" rel="noopener noreferrer" class="project-link" ${!safeLink ? 'onclick="return false"' : ''}>
                   <div class="name">${safeName} <span class="code">${safeCode}</span></div>
                 </a>
-                <button type="button" class="btn-action more btn-more-inline ${expanded ? 'is-open' : ''}" aria-label="More links" aria-expanded="${expanded ? 'true' : 'false'}" data-id="${p.id}" data-action="more">${expanded ? 'Less' : 'More'}</button>
+                ${moreButtonHtml}
               </div>
               
             </div>
@@ -713,7 +714,7 @@ export function initApp() {
           </div>
         </td>
       </tr>
-      <tr class="side-links-row ${expanded ? '' : 'is-hidden'}" data-more-row-for="${p.id}">
+      <tr class="side-links-row ${expanded ? 'is-expanded' : ''}" data-more-row-for="${p.id}">
         <td colspan="6">
           <div class="side-links-panel">${sideLinksHtml}</div>
         </td>
@@ -785,24 +786,26 @@ export function initApp() {
 
   function handleTableClick(e) {
     if (!$tableBody || !e.target || typeof e.target.closest !== 'function') return;
-    const starBtn = e.target.closest('.star-btn');
-    if (starBtn && $tableBody.contains(starBtn)) {
-      const id = parseInt(starBtn.getAttribute('data-id'), 10);
-      const p = PROJECTS.find(function (x) { return x.id === id; });
-      if (p) {
-        p.favorite = !p.favorite;
-        applyFiltersFromState();
-      }
-      return;
-    }
 
     const actionBtn = e.target.closest('.btn-action');
     if (actionBtn && $tableBody.contains(actionBtn)) {
       const id = parseInt(actionBtn.getAttribute('data-id'), 10);
       const action = actionBtn.getAttribute('data-action');
       if (action === 'more') {
-        EXPANDED_MORE_ROWS[id] = !EXPANDED_MORE_ROWS[id];
-        renderTable();
+        const nextExpanded = !EXPANDED_MORE_ROWS[id];
+        EXPANDED_MORE_ROWS[id] = nextExpanded;
+
+        const dataRow = $tableBody.querySelector('tr[data-id="' + id + '"]');
+        const sideRow = $tableBody.querySelector('tr[data-more-row-for="' + id + '"]');
+        if (dataRow && sideRow) {
+          sideRow.classList.toggle('is-expanded', nextExpanded);
+          actionBtn.setAttribute('aria-expanded', nextExpanded ? 'true' : 'false');
+          actionBtn.innerHTML = nextExpanded
+            ? 'Less <i class="fa-solid fa-chevron-up"></i>'
+            : 'More <i class="fa-solid fa-chevron-down"></i>';
+        } else {
+          renderTable();
+        }
         return;
       }
       if (action === 'edit') openAirdropFormForEdit(id);

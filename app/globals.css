@@ -857,16 +857,14 @@ button {
   align-items: center;
   gap: 0.75rem;
 }
-.star-btn {
-  border: none;
-  background: none;
-  color: var(--color-star-idle);
-  cursor: pointer;
-  padding: 0.25rem;
-}
-.star-btn:hover,
-.star-btn.favorited {
-  color: var(--color-accent-star);
+.name-prefix-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  width: 14px;
+  flex-shrink: 0;
 }
 .project-link {
   text-decoration: none;
@@ -900,7 +898,7 @@ button {
   border-radius: 4px;
 }
 .project-info .name {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -1087,10 +1085,14 @@ button {
 }
 .btn-action.more.is-open {
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  /* color: var(--color-primary); */
 }
 .btn-more-inline {
   height: 28px;
+}
+.btn-more-inline i {
+  margin-left: 0.25rem;
+  font-size: 0.7rem;
 }
 .btn-action:hover {
   background: var(--color-border);
@@ -1107,13 +1109,28 @@ button {
 .side-links-row td {
   padding-top: 0 !important;
   background: var(--color-surface-muted);
+  padding-bottom: 0 !important;
 }
 .side-links-panel {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  padding: 0;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    max-height 0.22s ease,
+    opacity 0.22s ease,
+    padding 0.22s ease;
+}
+.side-links-row.is-expanded .side-links-panel {
   padding: 0.75rem 0;
+  max-height: 120px;
+  opacity: 1;
+  pointer-events: auto;
 }
 .side-link-chip {
   display: inline-flex;

@@ -26,7 +26,7 @@ export default function HomePage() {
         </div>
       </div>
       <h1 className="app-title">
-        Airdrop Tracer <span className="app-version">(v0.2)</span>
+        Airdrop Tracer <span className="app-version">(v1.0.1)</span>
       </h1>
       <div className="social-icons">
         <a

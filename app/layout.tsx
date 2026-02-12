@@ -73,6 +73,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isVercelDeployment = process.env.VERCEL === "1";
   return (
     <html lang="en">
       <head>
@@ -93,7 +94,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <SpeedInsights />
+        {isVercelDeployment ? <SpeedInsights /> : null}
       </body>
     </html>
   );
