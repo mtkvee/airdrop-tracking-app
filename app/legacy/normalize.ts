@@ -1,11 +1,13 @@
 // @ts-nocheck
 import { ensureArray, ensureArrayOr } from './utils';
+import { normalizeSideLinks } from './sideLinks';
 
 const MAX_ARRAY = 20;
 const MAX_NAME = 80;
 const MAX_CODE = 20;
 const MAX_LINK = 2048;
 const MAX_STATUS_DATE = 40;
+const MAX_NOTE = 280;
 
 function clampString(value, max) {
   const str = value == null ? '' : String(value);
@@ -19,18 +21,6 @@ function clampArray(values, max) {
 function toNumber(value, fallback) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
-}
-
-function normalizeSideLinkItem(item) {
-  if (item && typeof item === 'object') {
-    const type = clampString(item.type || 'website', 32) || 'website';
-    const url = clampString(item.url || '', MAX_LINK);
-    if (!url) return null;
-    return { type: type, url: url };
-  }
-  const url = clampString(item, MAX_LINK);
-  if (!url) return null;
-  return { type: 'website', url: url };
 }
 
 export function normalizeProjects(list) {
@@ -51,8 +41,13 @@ export function normalizeProjects(list) {
             p.discordLink,
             p.telegramLink,
           ];
-    const sideLinks = rawSideLinks
-      .map(normalizeSideLinkItem)
+    const sideLinks = normalizeSideLinks(rawSideLinks)
+      .map(function (item) {
+        return {
+          type: clampString(item.type, 32),
+          url: clampString(item.url, MAX_LINK),
+        };
+      })
       .filter(function (v) { return !!v; })
       .slice(0, MAX_ARRAY);
     return {
@@ -70,6 +65,7 @@ export function normalizeProjects(list) {
       taskTime: toNumber(p.taskTime, 3),
       status: clampString(p.status || 'potential', 24),
       statusDate: clampString(p.statusDate, MAX_STATUS_DATE),
+      note: clampString(p.note, MAX_NOTE),
       rewardType: rewardType,
       logos: Array.isArray(p.logos) ? p.logos.slice(0, 10) : [],
       lastEdited: toNumber(p.lastEdited || p.createdAt, Date.now()),

@@ -22,7 +22,9 @@ Airdrop Tracer helps crypto users track, verify, and organize airdrops across wa
 - **Google auth + cloud sync**: Sign in to sync with Firestore when Firebase config is present.
 - **Local-first storage**: Work offline; data persists in local storage.
 - **Import/Export**: JSON backup/restore from the header buttons.
-- **Custom options**: Manage select options for task type, connect type, status, and reward type.
+- **Custom options**: Manage select options for task type, connect type, status, reward type, and side-link type.
+- **Expandable sub links**: Show per-airdrop links with a `More/Less` toggle in the Name column.
+- **Notes**: Save a short note per airdrop and preview it directly in the table row.
 - **Fast search and filters**: Narrow to new or specific categories quickly.
 
 ## Tech Stack
@@ -40,6 +42,24 @@ Airdrop Tracer helps crypto users track, verify, and organize airdrops across wa
 npm install
 npm run dev
 ```
+
+## Useful Commands
+```bash
+npm run clean      # remove .next cache
+npm run dev:clean  # clean cache + start dev
+npm run test       # run legacy normalization/link mapping tests
+```
+
+## Changelog
+### 2026-02
+- Added sub-link management with dynamic rows (`Add more`) and custom type options.
+- Added `More/Less` inline toggle to reveal sub links in the main data table.
+- Added smooth side-link open/close transition.
+- Added inline URL validation for main and sub links in Add/Edit modal.
+- Added `note` field in form + note preview in table + note search support.
+- Added first-run empty-state onboarding with direct `Open Manage Options` action.
+- Added local utility tests for normalization and side-link mapping logic.
+- Disabled Speed Insights outside Vercel deployment to avoid local `/_vercel/...` 404 noise.
 
 ## Notes
 This project is optimized for clear UX and fast decision-making. If you add new features, keep the status system and primary actions simple and consistent.

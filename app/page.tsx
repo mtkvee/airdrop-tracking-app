@@ -301,17 +301,10 @@ export default function HomePage() {
                   <select
                     id="airdropExtraLinkType"
                     name="extraLinkType"
-                    defaultValue="website"
                     className="is-hidden"
                     aria-hidden="true"
                     tabIndex={-1}
-                  >
-                    <option value="website">Website</option>
-                    <option value="x">X</option>
-                    <option value="discord">Discord</option>
-                    <option value="telegram">Telegram</option>
-                    <option value="github">GitHub</option>
-                  </select>
+                  ></select>
                   <a
                     href="#"
                     id="addMoreLinksAnchor"
@@ -397,6 +390,18 @@ export default function HomePage() {
                     multiple
                     size={4}
                   ></select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="airdropNote">Note</label>
+                  <textarea
+                    id="airdropNote"
+                    name="note"
+                    rows={3}
+                    maxLength={280}
+                    placeholder="Short note about this airdrop"
+                  ></textarea>
                 </div>
               </div>
               <div className="add-airdrop-message">
@@ -504,7 +509,7 @@ export default function HomePage() {
                     <option value="airdropConnectType">Connect</option>
                     <option value="airdropStatus">Status</option>
                     <option value="airdropRewardType">Reward</option>
-                    <option value="airdropExtraLinkType">Side link</option>
+                    <option value="airdropExtraLinkType">Sub link</option>
                   </select>
                 </div>
               </div>
@@ -549,10 +554,45 @@ export default function HomePage() {
               className="btn-secondary"
               id="manageOptionsCancel"
             >
-              Cancel
+              Reset All Options
             </button>
             <button type="button" className="btn-apply" id="manageOptionsSave">
               Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="modal-overlay"
+        id="resetOptionsConfirmModal"
+        aria-hidden="true"
+      >
+        <div className="modal modal-sm" role="dialog" aria-labelledby="resetOptionsConfirmTitle">
+          <div className="modal-header">
+            <h2 id="resetOptionsConfirmTitle" className="modal-title">
+              Reset All Options?
+            </h2>
+            <button
+              type="button"
+              className="modal-close"
+              id="resetOptionsConfirmClose"
+              aria-label="Close"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <div className="modal-body">
+            <p>
+              This will delete all options in Task, Connect, Status, Reward, and Sub Link Type.
+            </p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn-secondary" id="resetOptionsConfirmCancel">
+              Cancel
+            </button>
+            <button type="button" className="btn-danger" id="resetOptionsConfirmOk">
+              <i className="fas fa-trash-alt"></i> Reset
             </button>
           </div>
         </div>

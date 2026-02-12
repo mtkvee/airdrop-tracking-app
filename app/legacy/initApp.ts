@@ -5,6 +5,7 @@ import { doc, getDoc, onSnapshot, setDoc, serverTimestamp } from 'firebase/fires
 import { ensureArray, ensureArrayOr, escapeHtml, formatRelativeTime, sanitizeUrl } from './utils';
 import { normalizeProjects } from './normalize';
 import { mergePayloads } from './merge';
+import { normalizeSideLinks, toRenderableSideLinks } from './sideLinks';
 
 export function initApp() {
   'use strict';
@@ -127,6 +128,7 @@ export function initApp() {
   const $filtersClear = byId('filtersClear');
   const $airdropFormModal = byId('airdropFormModal');
   const $airdropForm = byId('airdropForm');
+  const $airdropLinkInput = byId('airdropLink');
   const $airdropFormClose = byId('airdropFormClose');
   const $airdropFormCancel = byId('airdropFormCancel');
   const $airdropFormTitle = byId('airdropFormTitle');
@@ -144,6 +146,10 @@ export function initApp() {
   const $manageOptionsForm = byId('manageOptionsForm');
   const $manageOptionsClose = byId('manageOptionsClose');
   const $manageOptionsCancel = byId('manageOptionsCancel');
+  const $resetOptionsConfirmModal = byId('resetOptionsConfirmModal');
+  const $resetOptionsConfirmClose = byId('resetOptionsConfirmClose');
+  const $resetOptionsConfirmCancel = byId('resetOptionsConfirmCancel');
+  const $resetOptionsConfirmOk = byId('resetOptionsConfirmOk');
   const $selectToManage = byId('selectToManage');
   const $optionsList = byId('optionsList');
   const $newOptionValue = byId('newOptionValue');
@@ -503,21 +509,14 @@ export function initApp() {
   }
 
   function projectToFormData(p) {
-    const sideLinks = ensureArrayOr(p.sideLinks, []).map(function (item) {
-      if (item && typeof item === 'object') {
-        return {
-          type: (item.type || 'website'),
-          url: item.url || '',
-        };
-      }
-      return { type: 'website', url: item || '' };
-    });
+    const sideLinks = normalizeSideLinks(ensureArrayOr(p.sideLinks, []));
     return {
       id: p.id,
       name: p.name,
       code: p.code,
       link: p.link || '',
       sideLinks: sideLinks,
+      note: p.note || '',
       taskType: ensureArray(p.taskType).slice(),
       connectType: ensureArray(p.connectType).slice(),
       taskCost: p.taskCost != null ? p.taskCost : '',
@@ -538,11 +537,8 @@ export function initApp() {
       name: name,
       code: (data.code || '').trim(),
       link: (data.link || '').trim() || null,
-      sideLinks: ensureArray(data.sideLinks).map(function (x) {
-        const type = x && typeof x === 'object' ? (x.type || 'website') : 'website';
-        const url = x && typeof x === 'object' ? (x.url || '') : (x || '');
-        return { type: String(type), url: String(url).trim() };
-      }).filter(function (x) { return !!x.url; }),
+      sideLinks: normalizeSideLinks(ensureArray(data.sideLinks)),
+      note: (data.note || '').trim(),
       logo: null,
       initial: initial,
       favorite: existingId ? (PROJECTS.find(function (p) { return p.id === existingId; }) || {}).favorite : false,
@@ -643,23 +639,10 @@ export function initApp() {
     const safeRewardTypeDisplay = escapeHtml(rewardTypeDisplay || '--');
     const safeLink = sanitizeUrl(p.link);
     const expanded = !!EXPANDED_MORE_ROWS[p.id];
-    const sideLinks = ensureArrayOr(p.sideLinks, []).map(function (raw) {
-      const rawType = raw && typeof raw === 'object' ? (raw.type || 'website') : 'website';
-      const rawUrl = raw && typeof raw === 'object' ? (raw.url || '') : raw;
-      const href = sanitizeUrl(rawUrl);
-      if (!href) return null;
-      let label = getOptionTextBySelect('airdropExtraLinkType', rawType) || String(rawType);
-      let icon = 'fas fa-link';
-      try {
-        const host = new URL(href).hostname.replace(/^www\./, '');
-        if (!label || String(label).toLowerCase() === 'website') label = host;
-        if (rawType === 'x' || host.indexOf('x.com') >= 0 || host.indexOf('twitter.com') >= 0) icon = 'fa-brands fa-x-twitter';
-        else if (rawType === 'discord' || host.indexOf('discord') >= 0) icon = 'fa-brands fa-discord';
-        else if (rawType === 'telegram' || host.indexOf('t.me') >= 0 || host.indexOf('telegram') >= 0) icon = 'fa-brands fa-telegram';
-        else if (rawType === 'github' || host.indexOf('github.com') >= 0) icon = 'fa-brands fa-github';
-      } catch (e) {}
-      return { href: href, label: label, icon: icon };
-    }).filter(function (x) { return !!x; });
+    const sideLinks = toRenderableSideLinks(p.sideLinks, function (type) {
+      return getOptionTextBySelect('airdropExtraLinkType', type) || String(type || '');
+    });
+    const safeNote = escapeHtml((p.note || '').trim());
     
     const taskCellContent = `
         <span class="task-meta">
@@ -668,11 +651,13 @@ export function initApp() {
         </span>
         <span class="task-desc">${safeConnectTypeDisplay}</span>
       `;
-    const sideLinksHtml = sideLinks.length
+    const sideLinksLinksHtml = sideLinks.length
       ? sideLinks.map(function (x) {
           return '<a href="' + x.href + '" target="_blank" rel="noopener noreferrer" class="side-link-chip" aria-label="' + escapeHtml(x.label) + '" title="' + escapeHtml(x.label) + '"><i class="' + x.icon + '"></i></a>';
         }).join('')
-      : '<span class="side-links-empty">No side links</span>';
+      : '<span class="side-links-empty">No sub links</span>';
+    const sideLinksNoteHtml = safeNote ? '<div class="project-note">' + safeNote + '</div>' : '';
+    const sideLinksHtml = sideLinksNoteHtml + '<div class="side-links-links">' + sideLinksLinksHtml + '</div>';
     const moreButtonHtml = sideLinks.length
       ? '<button type="button" class="btn-action more btn-more-inline ' + (expanded ? 'is-open' : '') + '" aria-label="More links" aria-expanded="' + (expanded ? 'true' : 'false') + '" data-id="' + p.id + '" data-action="more">' + (expanded ? 'Less <i class="fa-solid fa-chevron-up"></i>' : 'More <i class="fa-solid fa-chevron-down"></i>') + '</button>'
       : '';
@@ -688,7 +673,6 @@ export function initApp() {
                 </a>
                 ${moreButtonHtml}
               </div>
-              
             </div>
           </div>
         </td>
@@ -729,7 +713,7 @@ export function initApp() {
     const status = $statusFilter && $statusFilter.value || '';
     filteredProjects = PROJECTS.filter(function (p) {
       if (search) {
-        const match = (p.name + ' ' + p.code).toLowerCase().includes(search);
+        const match = (p.name + ' ' + p.code + ' ' + (p.note || '')).toLowerCase().includes(search);
         if (!match) return false;
       }
       if (taskType) {
@@ -778,7 +762,7 @@ export function initApp() {
     if (!$tableBody) return;
     const nextHtml = filteredProjects.length
       ? filteredProjects.map(renderProjectRow).join('')
-      : '<tr class="no-data-row"><td class="no-data-cell" colspan="6">No airdrops found.</td></tr>';
+      : '<tr class="no-data-row"><td class="no-data-cell" colspan="6"><div class="empty-state-card"><div class="empty-state-title">No airdrops yet.</div><div class="empty-state-copy">First, add options (Task, Connect, Status, Reward, Sub link), then create your first drop.</div><button type="button" class="btn-secondary empty-state-manage-btn" data-action="open-manage-options"><i class="fa-solid fa-bars-progress"></i>&nbsp;&nbsp;Manage</button></div></td></tr>';
     if (nextHtml === LAST_TABLE_HTML) return;
     LAST_TABLE_HTML = nextHtml;
     $tableBody.innerHTML = nextHtml;
@@ -786,6 +770,11 @@ export function initApp() {
 
   function handleTableClick(e) {
     if (!$tableBody || !e.target || typeof e.target.closest !== 'function') return;
+    const openManageBtn = e.target.closest('[data-action="open-manage-options"]');
+    if (openManageBtn && $tableBody.contains(openManageBtn)) {
+      openManageOptionsModal();
+      return;
+    }
 
     const actionBtn = e.target.closest('.btn-action');
     if (actionBtn && $tableBody.contains(actionBtn)) {
@@ -993,6 +982,35 @@ export function initApp() {
     setModalState($manageOptionsModal, false);
   }
 
+  function openResetOptionsConfirmModal() {
+    setModalState($resetOptionsConfirmModal, true);
+  }
+
+  function closeResetOptionsConfirmModal() {
+    setModalState($resetOptionsConfirmModal, false);
+  }
+
+  function clearSelectOptions(selectId) {
+    var selectEl = byId(selectId);
+    if (!selectEl) return;
+    while (selectEl.options.length) selectEl.remove(0);
+  }
+
+  function resetAllManagedOptions() {
+    var managedIds = ['airdropTaskType', 'airdropConnectType', 'airdropStatus', 'airdropRewardType', 'airdropExtraLinkType'];
+    managedIds.forEach(clearSelectOptions);
+    CUSTOM_OPTIONS = {};
+    saveToLocalStorage();
+    syncFilterOptionsWithForm();
+    try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch (e) {}
+    refreshExtraLinkTypeSelects();
+    applyFiltersFromState();
+    renderOptionsList();
+    closeResetOptionsConfirmModal();
+    closeManageOptionsModal();
+    setAuthStatus('All options reset', 'success', true);
+  }
+
   function renderOptionsList() {
     if (!$selectToManage.value) {
       $optionsList.innerHTML = '<p style="color: #999; font-size: 0.9rem;">Select a field to manage its options</p>';
@@ -1114,19 +1132,19 @@ export function initApp() {
 
   function getExtraLinkTypeOptions() {
     const sel = byId('airdropExtraLinkType');
-    if (!sel) return [{ value: 'website', text: 'Website' }];
+    if (!sel) return [];
     const options = Array.from(sel.options || []).map(function (o) {
       return { value: o.value, text: o.text };
     }).filter(function (o) { return !!o.value; });
-    return options.length ? options : [{ value: 'website', text: 'Website' }];
+    return options;
   }
 
   function buildExtraLinkTypeControl(typeValue) {
-    const selectedValue = String(typeValue || 'website');
+    const selectedValue = String(typeValue || '');
     const options = getExtraLinkTypeOptions();
     const selected =
       options.find(function (x) { return x.value === selectedValue; }) ||
-      { value: selectedValue, text: selectedValue };
+      { value: selectedValue, text: selectedValue || 'Select type' };
 
     const control = document.createElement('div');
     control.className = 'extra-link-type-control';
@@ -1146,6 +1164,12 @@ export function initApp() {
 
     const menu = document.createElement('div');
     menu.className = 'extra-link-type-menu';
+    if (!options.length) {
+      const empty = document.createElement('div');
+      empty.className = 'extra-link-type-empty';
+      empty.textContent = 'No options';
+      menu.appendChild(empty);
+    }
     options.forEach(function (optItem) {
       const item = document.createElement('button');
       item.type = 'button';
@@ -1174,8 +1198,8 @@ export function initApp() {
   }
 
   function buildExtraLinkRow(entry) {
-    const item = entry && typeof entry === 'object' ? entry : { type: 'website', url: entry || '' };
-    const typeValue = (item.type || 'website').toString();
+    const item = entry && typeof entry === 'object' ? entry : { type: '', url: entry || '' };
+    const typeValue = (item.type || '').toString();
     const urlValue = (item.url || '').toString();
     const row = document.createElement('div');
     row.className = 'extra-link-row';
@@ -1191,7 +1215,7 @@ export function initApp() {
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'extra-link-delete';
-    delBtn.setAttribute('aria-label', 'Delete side link');
+    delBtn.setAttribute('aria-label', 'Delete sub link');
     delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
 
     row.appendChild(typeControl);
@@ -1224,7 +1248,7 @@ export function initApp() {
       .map(function (row) {
         const typeEl = row.querySelector('input[name="sideLinkType"]');
         const urlEl = row.querySelector('input[name="sideLinkUrl"]');
-        const type = typeEl && typeEl.value ? typeEl.value : 'website';
+        const type = typeEl && typeEl.value ? typeEl.value : '';
         const url = urlEl && urlEl.value ? urlEl.value.trim() : '';
         return { type: type, url: url };
       })
@@ -1237,7 +1261,7 @@ export function initApp() {
       const typeEl = row.querySelector('input[name="sideLinkType"]');
       const urlEl = row.querySelector('input[name="sideLinkUrl"]');
       return {
-        type: typeEl && typeEl.value ? typeEl.value : 'website',
+        type: typeEl && typeEl.value ? typeEl.value : '',
         url: urlEl && urlEl.value ? urlEl.value : '',
       };
     });
@@ -1256,6 +1280,7 @@ export function initApp() {
     const statusEl = byId('airdropStatus');
     const statusDateEl = byId('airdropStatusDate');
     const rewardTypeEl = byId('airdropRewardType');
+    const noteEl = byId('airdropNote');
     const idVal = idEl && idEl.value ? parseInt(idEl.value, 10) : null;
     return {
       id: idVal,
@@ -1270,6 +1295,7 @@ export function initApp() {
       status: statusEl ? statusEl.value : 'potential',
       statusDate: statusDateEl ? statusDateEl.value : '',
       rewardType: rewardTypeEl ? (rewardTypeEl.multiple ? Array.from(rewardTypeEl.selectedOptions).map(function(o){ return o.value; }) : rewardTypeEl.value) : [],
+      note: noteEl ? noteEl.value : '',
     };
   }
 
@@ -1296,6 +1322,7 @@ export function initApp() {
     set('airdropStatus', data.status);
     set('airdropStatusDate', data.statusDate);
     set('airdropRewardType', data.rewardType && Array.isArray(data.rewardType) ? data.rewardType : (data.rewardType ? [data.rewardType] : []));
+    set('airdropNote', data.note);
   }
 
   function resetAirdropForm() {
@@ -1312,7 +1339,53 @@ export function initApp() {
       status: 'potential',
       statusDate: '',
       rewardType: [],
+      note: '',
     });
+  }
+
+  function clearLinkValidationState() {
+    const main = byId('airdropLink');
+    if (main) main.classList.remove('input-invalid');
+    if ($airdropExtraLinks) {
+      Array.from($airdropExtraLinks.querySelectorAll('input[name="sideLinkUrl"]')).forEach(function (el) {
+        el.classList.remove('input-invalid');
+      });
+    }
+  }
+
+  function isHttpUrl(value) {
+    if (!value) return false;
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function validateLinkInputs(data) {
+    clearLinkValidationState();
+    const errors = [];
+    const main = (data.link || '').trim();
+    const mainEl = byId('airdropLink');
+    if (main && !isHttpUrl(main)) {
+      errors.push('Main link must be a valid http(s) URL');
+      if (mainEl) mainEl.classList.add('input-invalid');
+    }
+
+    if ($airdropExtraLinks) {
+      const sideInputs = Array.from($airdropExtraLinks.querySelectorAll('input[name="sideLinkUrl"]'));
+      const sideLinks = ensureArray(data.sideLinks);
+      sideLinks.forEach(function (entry, idx) {
+        const url = String((entry && entry.url) || '').trim();
+        if (!url) return;
+        if (!isHttpUrl(url)) {
+          errors.push('Sub link #' + (idx + 1) + ' must be a valid http(s) URL');
+          if (sideInputs[idx]) sideInputs[idx].classList.add('input-invalid');
+        }
+      });
+    }
+    return errors;
   }
 
   function openAirdropFormForEdit(id) {
@@ -1327,6 +1400,11 @@ export function initApp() {
   function handleAirdropFormSubmit(e) {
     e.preventDefault();
     const data = getAirdropFormData();
+    const linkErrors = validateLinkInputs(data);
+    if (linkErrors.length) {
+      showAirdropFormError(linkErrors.join(' | '));
+      return;
+    }
     // Validate duplicate name (case-insensitive) for new entries
     var nameVal = (data.name || '').trim();
     if (!nameVal) {
@@ -1373,6 +1451,7 @@ export function initApp() {
       el.textContent = '';
       el.classList.add('is-hidden');
       el.style.display = 'none';
+      clearLinkValidationState();
     } catch (e) {}
   }
 
@@ -1661,6 +1740,7 @@ export function initApp() {
     else if ($deleteConfirmModal && $deleteConfirmModal.classList.contains('open')) closeDeleteConfirmModal();
     else if ($filtersModal && $filtersModal.classList.contains('open')) closeFiltersModal();
     else if ($manageOptionsModal && $manageOptionsModal.classList.contains('open')) closeManageOptionsModal();
+    else if ($resetOptionsConfirmModal && $resetOptionsConfirmModal.classList.contains('open')) closeResetOptionsConfirmModal();
     else if ($deleteAllConfirmModal && $deleteAllConfirmModal.classList.contains('open')) closeDeleteAllConfirmModal();
   });
 
@@ -1678,7 +1758,10 @@ export function initApp() {
   });
   on($addMoreLinksAnchor, 'click', function (e) {
     e.preventDefault();
-    addExtraLinkInput({ type: 'website', url: '' }, true);
+    addExtraLinkInput({ type: '', url: '' }, true);
+  });
+  on($airdropLinkInput, 'input', function () {
+    if ($airdropLinkInput) $airdropLinkInput.classList.remove('input-invalid');
   });
   on($airdropExtraLinks, 'click', function (e) {
     const typeTrigger = e.target && e.target.closest ? e.target.closest('.extra-link-type-trigger') : null;
@@ -1699,7 +1782,7 @@ export function initApp() {
       e.preventDefault();
       const control = typeOption.closest('.extra-link-type-control');
       if (!control) return;
-      const value = typeOption.getAttribute('data-value') || 'website';
+      const value = typeOption.getAttribute('data-value') || '';
       const text = typeOption.getAttribute('data-text') || value;
       const hiddenInput = control.querySelector('input[name="sideLinkType"]');
       const trigger = control.querySelector('.extra-link-type-trigger');
@@ -1718,6 +1801,10 @@ export function initApp() {
     e.preventDefault();
     const row = deleteBtn.closest('.extra-link-row');
     if (row && row.parentNode) row.parentNode.removeChild(row);
+  });
+  on($airdropExtraLinks, 'input', function (e) {
+    const target = e.target;
+    if (target && target.name === 'sideLinkUrl') target.classList.remove('input-invalid');
   });
   on($airdropForm, 'submit', handleAirdropFormSubmit);
   on($airdropFormClose, 'click', closeAirdropFormModal);
@@ -1778,7 +1865,7 @@ export function initApp() {
     closeManageOptionsModal();
   });
   on($manageOptionsClose, 'click', closeManageOptionsModal);
-  on($manageOptionsCancel, 'click', closeManageOptionsModal);
+  on($manageOptionsCancel, 'click', openResetOptionsConfirmModal);
   on($editOptionClose, 'click', closeEditOptionModal);
   on($editOptionCancel, 'click', closeEditOptionModal);
   on($editOptionSave, 'click', handleEditOptionSave);
@@ -1797,7 +1884,11 @@ export function initApp() {
   on($deleteAllConfirmOk, 'click', handleDeleteAllConfirm);
   on($deleteAllConfirmCancel, 'click', closeDeleteAllConfirmModal);
   on($deleteAllConfirmClose, 'click', closeDeleteAllConfirmModal);
+  on($resetOptionsConfirmOk, 'click', resetAllManagedOptions);
+  on($resetOptionsConfirmCancel, 'click', closeResetOptionsConfirmModal);
+  on($resetOptionsConfirmClose, 'click', closeResetOptionsConfirmModal);
   bindOverlayClose($manageOptionsModal, closeManageOptionsModal);
+  bindOverlayClose($resetOptionsConfirmModal, closeResetOptionsConfirmModal);
   bindOverlayClose($deleteAllConfirmModal, closeDeleteAllConfirmModal);
   on($exportBtn, 'click', exportData);
   on($importBtn, 'click', function () { if ($importFileInput) $importFileInput.click(); });

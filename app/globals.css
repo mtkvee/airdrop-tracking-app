@@ -847,6 +847,37 @@ button {
   font-size: 0.9rem;
   padding: 2rem 1rem !important;
 }
+.empty-state-card {
+  max-width: 25rem;
+  margin: 0 auto;
+  text-align: center;
+  display: grid;
+  gap: 0.55rem;
+  justify-items: center;
+}
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.empty-state-copy {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.empty-state-manage-btn {
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem !important;
+  background: var(--color-accent-star) !important;
+  color: var(--color-white) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  border: none !important;
+}
+
+.empty-state-manage-btn:hover {
+  background: var(--color-accent-star-hover) !important;
+}
 
 /* Column: Name */
 .col-name {
@@ -898,7 +929,7 @@ button {
   border-radius: 4px;
 }
 .project-info .name {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -911,6 +942,15 @@ button {
   font-size: 0.85rem;
   color: var(--color-muted);
   margin-left: 0.5rem;
+}
+.project-note {
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  max-width: 22rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .project-info .name,
@@ -1113,9 +1153,9 @@ button {
 }
 .side-links-panel {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.5rem;
-  flex-wrap: wrap;
   padding: 0;
   max-height: 0;
   opacity: 0;
@@ -1128,9 +1168,15 @@ button {
 }
 .side-links-row.is-expanded .side-links-panel {
   padding: 0.75rem 0;
-  max-height: 120px;
+  max-height: 180px;
   opacity: 1;
   pointer-events: auto;
+}
+.side-links-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 .side-link-chip {
   display: inline-flex;
@@ -1349,6 +1395,7 @@ button {
 .airdrop-form input[type="text"],
 .airdrop-form input[type="number"],
 .airdrop-form input[type="url"],
+.airdrop-form textarea,
 .airdrop-form select {
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -1356,6 +1403,10 @@ button {
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
   color: var(--color-text);
+}
+.airdrop-form textarea {
+  resize: vertical;
+  min-height: 4.8rem;
 }
 
 .add-airdrop-message {
@@ -1461,6 +1512,11 @@ button {
 
 .extra-link-type-option:hover {
   background: var(--color-bg);
+}
+.extra-link-type-empty {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.5rem;
 }
 
 .airdrop-form .extra-link-input {
@@ -1632,10 +1688,15 @@ select#airdropRewardType {
 }
 
 .airdrop-form input:focus,
+.airdrop-form textarea:focus,
 .airdrop-form select:focus {
   border-color: var(--color-primary);
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+.airdrop-form .input-invalid {
+  border-color: var(--color-danger) !important;
+  box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.12);
 }
 .form-row {
   margin-bottom: 1rem;
@@ -1649,9 +1710,6 @@ select#airdropRewardType {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 1rem;
-}
-.reward-form-row {
-  margin-bottom: 0;
 }
 
 .form-group {
