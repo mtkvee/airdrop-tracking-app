@@ -50,6 +50,7 @@ export function normalizeProjects(list) {
       })
       .filter(function (v) { return !!v; })
       .slice(0, MAX_ARRAY);
+    var normalizedLastEdited = toNumber(p.lastEdited || p.createdAt, Date.now());
     return {
       id: toNumber(p.id, Date.now()),
       name: clampString(p.name, MAX_NAME),
@@ -68,7 +69,7 @@ export function normalizeProjects(list) {
       note: clampString(p.note, MAX_NOTE),
       rewardType: rewardType,
       logos: Array.isArray(p.logos) ? p.logos.slice(0, 10) : [],
-      lastEdited: toNumber(p.lastEdited || p.createdAt, Date.now()),
+      lastEdited: normalizedLastEdited,
     };
   });
 }

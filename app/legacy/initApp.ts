@@ -16,9 +16,12 @@ export function initApp() {
     w.__airdropInit = true;
   }
   const STORAGE_KEY = 'airdrop-tracker-data';
+  const BACKUP_STORAGE_KEY = 'airdrop-tracker-backups';
   const STORAGE_EXPIRY_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
+  const AUTO_BACKUP_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
   let CUSTOM_OPTIONS = {};
   let LAST_UPDATED_AT = 0; // Track when data was last updated
+  let LAST_AUTO_BACKUP_AT = 0;
 
   function byId(id) {
     return document.getElementById(id) as any;
@@ -64,6 +67,9 @@ export function initApp() {
       if (data && data.lastUpdatedAt) {
         LAST_UPDATED_AT = data.lastUpdatedAt;
       }
+      if (data && data.lastAutoBackupAt) {
+        LAST_AUTO_BACKUP_AT = Number(data.lastAutoBackupAt) || 0;
+      }
       const list = Array.isArray(data) ? data : (data.projects || []);
       const savedAt = data.savedAt || 0;
       if (savedAt && Date.now() - savedAt > STORAGE_EXPIRY_MS) return [];
@@ -78,13 +84,39 @@ export function initApp() {
       projects: PROJECTS,
       customOptions: CUSTOM_OPTIONS,
       lastUpdatedAt: LAST_UPDATED_AT,
+      lastAutoBackupAt: LAST_AUTO_BACKUP_AT,
       savedAt: Date.now(),
     };
+  }
+
+  function persistAutoBackup(payload, reason) {
+    try {
+      const now = Date.now();
+      const raw = localStorage.getItem(BACKUP_STORAGE_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const backups = Array.isArray(existing) ? existing.slice(0, 19) : [];
+      backups.unshift({
+        id: now,
+        reason: reason || 'auto',
+        createdAt: now,
+        payload: payload || buildPayload(),
+      });
+      localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backups));
+      LAST_AUTO_BACKUP_AT = now;
+    } catch (e) {}
+  }
+
+  function maybeRunAutoBackup(payload, reason) {
+    if (!PROJECTS || !PROJECTS.length) return;
+    if (Date.now() - Number(LAST_AUTO_BACKUP_AT || 0) < AUTO_BACKUP_INTERVAL_MS) return;
+    persistAutoBackup(payload || buildPayload(), reason || 'interval');
+    setAuthStatus('Auto backup saved (3-day interval)', 'muted', true);
   }
 
   function saveToLocalStorage(skipCloud) {
     try {
       const payload = buildPayload();
+      maybeRunAutoBackup(payload, 'save');
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       if (!skipCloud) queueCloudSave(payload);
     } catch (e) {}
@@ -395,6 +427,7 @@ export function initApp() {
     const list = Array.isArray(payload) ? payload : (payload.projects || []);
     try { CUSTOM_OPTIONS = payload.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
     LAST_UPDATED_AT = payload.lastUpdatedAt || 0;
+    LAST_AUTO_BACKUP_AT = Number(payload.lastAutoBackupAt || LAST_AUTO_BACKUP_AT || 0);
     PROJECTS = normalizeProjects(list);
     initCustomOptions();
     syncFilterOptionsWithForm();
@@ -1417,11 +1450,28 @@ export function initApp() {
       showAirdropFormError('Name is required');
       return;
     }
+    var codeVal = (data.code || '').trim().toUpperCase();
+    var rawLinkVal = (data.link || '').trim();
+    var normalizeLinkForDedup = function (value) {
+      if (!value) return '';
+      try {
+        const parsed = new URL(value);
+        const path = parsed.pathname.replace(/\/+$/, '');
+        return (parsed.origin + path).toLowerCase();
+      } catch (err) {
+        return value.toLowerCase();
+      }
+    };
+    var linkVal = normalizeLinkForDedup(rawLinkVal);
     var exists = PROJECTS.some(function (p) {
-      return p.name && p.name.toLowerCase() === nameVal.toLowerCase() && p.id !== data.id;
+      if (p.id === data.id) return false;
+      var sameName = p.name && p.name.toLowerCase() === nameVal.toLowerCase();
+      var sameCode = codeVal && p.code && String(p.code).toUpperCase() === codeVal;
+      var sameLink = linkVal && normalizeLinkForDedup(p.link || '') === linkVal;
+      return sameName || sameCode || sameLink;
     });
     if (exists) {
-      showAirdropFormError('Already added');
+      showAirdropFormError('Possible duplicate found (same name/code/link)');
       return;
     }
 
@@ -1978,6 +2028,8 @@ export function initApp() {
   sortAllSelects();
   // Display initial last updated time
   updateLastUpdatedDisplay();
+  // 3-day automatic local backup snapshots
+  maybeRunAutoBackup(buildPayload(), 'startup');
   // Update the relative time display every minute
   setInterval(updateLastUpdatedDisplay, 60000);
   applyFiltersFromState();

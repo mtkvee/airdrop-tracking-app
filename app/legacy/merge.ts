@@ -55,10 +55,12 @@ export function mergePayloads(localPayload, cloudPayload) {
   var mergedProjects = mergeProjects(normalizeProjects(localList), normalizeProjects(cloudList));
   var mergedOptions = mergeCustomOptions(localPayload && localPayload.customOptions || {}, cloudPayload && cloudPayload.customOptions || {});
   var mergedUpdated = Math.max(Number(localPayload && localPayload.lastUpdatedAt || 0), Number(cloudPayload && cloudPayload.lastUpdatedAt || 0));
+  var mergedBackupAt = Math.max(Number(localPayload && localPayload.lastAutoBackupAt || 0), Number(cloudPayload && cloudPayload.lastAutoBackupAt || 0));
   return {
     projects: mergedProjects,
     customOptions: mergedOptions,
     lastUpdatedAt: mergedUpdated,
+    lastAutoBackupAt: mergedBackupAt,
     savedAt: Date.now(),
   };
 }

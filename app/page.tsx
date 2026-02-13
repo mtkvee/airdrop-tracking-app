@@ -228,7 +228,7 @@ export default function HomePage() {
                   <th className="col-reward sortable" data-sort="reward">
                     Reward
                   </th>
-                  <th className="col-actions col-actions-header">Actions</th>
+                  <th className="col-actions col-header-center">Actions</th>
                 </tr>
               </thead>
               <tbody id="tableBody"></tbody>
@@ -310,7 +310,7 @@ export default function HomePage() {
                     id="addMoreLinksAnchor"
                     className="add-more-links-anchor"
                   >
-                    Add more
+                    Add more links
                   </a>
                   <div
                     id="airdropExtraLinks"
