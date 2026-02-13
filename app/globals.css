@@ -216,24 +216,6 @@ button {
   flex-wrap: wrap;
 }
 
-.btn-filters {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.65rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.btn-filters:hover {
-  background: var(--color-bg);
-  border-color: var(--color-border-strong);
-}
-
 .filter-select {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 1px solid var(--color-border);
@@ -730,7 +712,7 @@ button {
   background: var(--color-surface);
   color: var(--color-text);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   padding: 0.3rem 0.6rem;
   border-radius: var(--radius-xl);
   cursor: pointer;
@@ -1064,40 +1046,6 @@ button {
   font-weight: 500;
   color: var(--color-text-subtle);
 }
-/* Column: Raise/Funds */
-.col-raise {
-  min-width: 140px;
-}
-.raise-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.raise-amount {
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-.raise-avatars {
-  display: flex;
-  align-items: center;
-}
-.raise-avatars img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--color-white);
-  margin-left: -8px;
-  object-fit: cover;
-}
-.raise-avatars img:first-child {
-  margin-left: 0;
-}
-.raise-count {
-  font-size: 0.85rem;
-  color: var(--color-muted);
-  margin-left: 0.25rem;
-}
 
 /* Actions column */
 .col-actions {
@@ -1308,20 +1256,6 @@ button {
   border-top: 1px solid var(--color-border);
   background: var(--color-surface-muted);
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-}
-
-.btn-reset {
-  padding: 0.6rem 1.25rem;
-  border: 1px solid var(--color-danger);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-danger);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.btn-reset:hover {
-  background: var(--color-danger-bg);
 }
 
 .btn-apply {

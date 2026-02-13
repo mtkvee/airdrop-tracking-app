@@ -2,7 +2,7 @@ import { ensureArray } from './utils';
 
 type LinkEntry = { type?: string; url?: string };
 
-export function isHttpUrl(value: string): boolean {
+function isHttpUrl(value: string): boolean {
   if (!value) return false;
   try {
     const parsed = new URL(value);

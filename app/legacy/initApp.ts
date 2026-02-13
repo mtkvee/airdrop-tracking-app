@@ -7,7 +7,7 @@ import { normalizeProjects } from './normalize';
 import { mergePayloads } from './merge';
 import { normalizeSideLinks, toRenderableSideLinks } from './sideLinks';
 import { STATUS_CONFIG, MANAGED_SELECT_IDS, SORTABLE_SELECT_IDS, MULTI_SELECT_IDS, DEFAULT_OPTIONS_BY_SELECT } from './constants';
-import { getNextProjectId, projectToFormData, formDataToProject, hasProjectDuplicate } from './projectHelpers';
+import { projectToFormData, formDataToProject, hasProjectDuplicate } from './projectHelpers';
 import { validateProjectLinks } from './validation';
 
 export function initApp() {
@@ -552,10 +552,6 @@ export function initApp() {
     }, 300);
   }
 
-
-  function getNextId() {
-    return getNextProjectId(PROJECTS);
-  }
 
   function addProject(data) {
     const p = formDataToProject(data, null, PROJECTS);

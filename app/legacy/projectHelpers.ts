@@ -18,7 +18,7 @@ type ProjectFormData = {
   rewardType?: string[] | string;
 };
 
-export function getNextProjectId(projects: Project[]): number {
+function getNextProjectId(projects: Project[]): number {
   return projects.length ? Math.max.apply(null, projects.map(function (p) { return p.id; })) + 1 : 1;
 }
 

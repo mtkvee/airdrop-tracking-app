@@ -8,12 +8,6 @@ export type SideLink = {
   url: string;
 };
 
-export type StatusHistoryEntry = {
-  status: string;
-  statusDate: string;
-  changedAt: number;
-};
-
 export type Project = {
   id: number;
   name: string;
