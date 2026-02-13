@@ -131,7 +131,7 @@ h1 {
 
 .social-icon {
   color: var(--color-text);
-  font-size: 1.25rem;
+  font-size: 1rem;
   transition: color 0.2s;
 }
 
@@ -181,9 +181,9 @@ button {
   align-items: center;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   padding: 0.5rem 0.75rem;
-  min-width: 220px;
+  width: 50%;
 }
 .search-wrap:focus-within {
   border-color: var(--color-primary);
@@ -257,7 +257,7 @@ button {
   height: 36px;
   padding: 0;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
   background: var(--color-surface);
   color: var(--color-text);
   cursor: pointer;
@@ -314,7 +314,7 @@ button {
   gap: 0.5rem;
   padding: 0.6rem 1rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xl);
   background: var(--color-surface);
   color: var(--color-text);
   font-size: 0.9rem;
@@ -354,7 +354,7 @@ button {
   gap: 0.45rem;
   padding: 0.6rem 0.85rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--color-surface);
   color: var(--color-text);
   font-size: 0.85rem;
@@ -497,32 +497,28 @@ button {
   gap: 0.5rem;
 }
 
-.tabs {
-  display: flex;
-  background: var(--color-primary-soft);
-  border-radius: var(--radius-md);
-  padding: 3px;
-}
-.tab {
-  padding: 0.5rem 1.25rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: 0.9rem;
-  font-weight: 500;
+.btn-recent {
+  padding: 0.25rem 0.95rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
   color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
 }
-.tab:hover {
-  color: var(--color-text);
-  font-weight: 600;
+.btn-recent:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border-strong);
 }
-.tab-active {
+.btn-recent.is-active {
   background: var(--color-primary-strong);
-  color: var(--color-white-93);
+  border-color: var(--color-primary-strong);
+  color: var(--color-white);
 }
-.tab-active:hover {
-  color: var(--color-white-80);
+.btn-recent.is-active:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 .btn-add-airdrop {
@@ -531,7 +527,7 @@ button {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--color-primary-strong);
   color: var(--color-white);
   cursor: pointer;
@@ -546,7 +542,7 @@ button {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--color-danger-strong);
   color: var(--color-white);
   cursor: pointer;
@@ -596,7 +592,7 @@ button {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--color-accent-star);
   color: var(--color-white);
   cursor: pointer;
@@ -675,14 +671,23 @@ button {
 }
 
 .last-updated-section {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 0.75rem 0.75rem 1.25rem;
   background: var(--color-surface-muted);
   border-bottom: 1px solid var(--color-border);
   font-size: 0.85rem;
   color: var(--color-muted);
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.last-updated-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .last-updated-icon {
@@ -694,18 +699,27 @@ button {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  white-space: nowrap;
 }
 
 .task-count-dropdown {
   position: relative;
-  margin-left: 0.25rem;
 }
 
 .counter-row {
   display: flex;
   align-items: center;
-  margin: 0.5rem 0;
   gap: 0.5rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.counter-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-wrap: nowrap;
 }
 
 .task-count-trigger {
@@ -718,7 +732,7 @@ button {
   font-size: 0.85rem;
   font-weight: 600;
   padding: 0.3rem 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--radius-xl);
   cursor: pointer;
 }
 
@@ -972,7 +986,7 @@ button {
   padding: 0.35rem 0.75rem;
   background: var(--color-primary-soft);
   color: var(--color-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-xl);
   font-size: 0.85rem;
   font-weight: 500;
   text-transform: capitalize;
@@ -1103,7 +1117,7 @@ button {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xl);
   background: var(--color-bg);
   color: var(--color-text-subtle);
   cursor: pointer;
@@ -1681,10 +1695,6 @@ select#airdropRewardType {
     width: 100%;
     min-width: 0;
   }
-
-  .search-wrap {
-    max-width: 10rem;
-  }
 }
 
 .airdrop-form input:focus,
@@ -1852,29 +1862,36 @@ select#airdropRewardType {
   .btn-add-airdrop {
     font-size: 0.85rem;
   }
+
+  .search-wrap {
+    width: 60%;
+  }
+}
+
+@media (max-width: 680px) {
+  .last-updated-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-wrap {
+    width: 68%;
+  }
 }
 
 @media (max-width: 544px) {
-  .last-updated-section {
-    flex-wrap: wrap;
-    align-items: flex-start;
+  .search-wrap {
+    width: 78%;
+    min-width: 0;
   }
-
   .counter-row {
-    width: 100%;
-    gap: 0.25rem;
-  }
-
-  .task-count-dropdown {
-    min-width: 4rem;
-    width: 6rem;
-    margin: 0;
+    flex-wrap: wrap;
   }
 
   .task-count-trigger {
     width: 100%;
     justify-content: center;
-    padding: 0.3rem 0.35rem;
   }
 
   .task-count-menu {
@@ -1882,22 +1899,31 @@ select#airdropRewardType {
     right: auto;
     min-width: 140px;
   }
+
+  .counter-tools {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
 }
 
 @media (max-width: 480px) {
+  .search-wrap {
+    width: 88%;
+  }
+
+  .counter-row {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
   .extra-link-row {
     display: grid;
     grid-template-columns: 6rem 1fr auto;
   }
 
-  .search-wrap {
-    min-width: 100%;
-  }
-
-  .filter-bar,
-  .tabs,
-  .filter-bar button,
-  .tabs button {
+  .counter-tools .filter-bar,
+  .counter-tools .btn-recent,
+  .counter-tools .filter-bar button {
     flex: 1;
   }
 }

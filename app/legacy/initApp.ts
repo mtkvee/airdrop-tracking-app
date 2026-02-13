@@ -187,7 +187,6 @@ export function initApp() {
   const $deleteConfirmCancel = byId('deleteConfirmCancel');
   const $deleteConfirmOk = byId('deleteConfirmOk');
   const $deleteConfirmMessage = byId('deleteConfirmMessage');
-  const $removeFiltersBtn = byId('removeFiltersBtn');
   const $deleteAllBtn = byId('deleteAllBtn');
   const $manageOptionsBtn = byId('manageOptionsBtn');
   const $manageOptionsModal = byId('manageOptionsModal');
@@ -235,6 +234,7 @@ export function initApp() {
   const $statusCountDropdown = byId('statusCountDropdown');
   const $statusCountTrigger = byId('statusCountTrigger');
   const $statusCountMenu = byId('statusCountMenu');
+  const $recentBtn = byId('recentBtn');
   let AUTH_STATUS_LAST_KEY = '';
   let AUTH_STATUS_HIDE_TIMER = null;
   const AUTH_STATUS_HIDE_MS = 1500;
@@ -710,7 +710,13 @@ export function initApp() {
     `;
   }
 
+  function collapseAllMoreRows() {
+    if (!Object.keys(EXPANDED_MORE_ROWS || {}).length) return;
+    EXPANDED_MORE_ROWS = {};
+  }
+
   function applyFiltersFromState() {
+    collapseAllMoreRows();
     const search = ($searchInput && $searchInput.value || '').trim().toLowerCase();
     const taskType = $taskFilter && $taskFilter.value || '';
     const connectType = $taskTypeFilter && $taskTypeFilter.value || '';
@@ -1493,6 +1499,7 @@ export function initApp() {
     if ($taskTypeFilter && $taskTypeFilter.value) hadAnyFilter = true;
     if ($statusFilter && $statusFilter.value) hadAnyFilter = true;
     if ($searchInput && $searchInput.value) hadAnyFilter = true;
+    if (viewMode !== 'all') hadAnyFilter = true;
     if ($taskFilter) {
       $taskFilter.value = '';
       $taskFilter.dispatchEvent(new Event('change'));
@@ -1509,6 +1516,8 @@ export function initApp() {
       $searchInput.value = '';
       $searchInput.dispatchEvent(new Event('input'));
     }
+    viewMode = 'all';
+    updateRecentButtonState();
     applyFiltersFromState();
     if (hadAnyFilter) setAuthStatus('Removed filters', 'muted', true);
   }
@@ -1699,6 +1708,7 @@ export function initApp() {
           sortKey = key;
           sortDir = key === 'name' ? 'asc' : 'desc';
         }
+        collapseAllMoreRows();
         sortProjects();
         renderTable();
       });
@@ -1825,16 +1835,27 @@ export function initApp() {
   on($deleteConfirmOk, 'click', handleDeleteConfirm);
   bindOverlayClose($deleteConfirmModal, closeDeleteConfirmModal);
 
-  document.querySelectorAll('.tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('tab-active'); });
-      tab.classList.add('tab-active');
-      viewMode = tab.getAttribute('data-tab') === 'newTasks' ? 'newTasks' : 'all';
-      applyFiltersFromState();
-    });
-  });
+  function updateRecentButtonState() {
+    if (!$recentBtn) return;
+    const active = viewMode === 'newTasks';
+    $recentBtn.classList.toggle('is-active', active);
+    $recentBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  }
 
-  on($removeFiltersBtn, 'click', removeFilters);
+  function toggleRecentView() {
+    viewMode = viewMode === 'newTasks' ? 'all' : 'newTasks';
+    updateRecentButtonState();
+    applyFiltersFromState();
+  }
+
+  document.addEventListener('click', function (e) {
+    const recentBtn = e.target && e.target.closest ? e.target.closest('#recentBtn') : null;
+    if (recentBtn) return toggleRecentView();
+    const removeBtn = e.target && e.target.closest ? e.target.closest('#removeFiltersBtn') : null;
+    if (removeBtn) {
+      removeFilters();
+    }
+  });
   on($deleteAllBtn, 'click', deleteAllProjects);
   on($manageOptionsBtn, 'click', openManageOptionsModal);
   on($selectToManage, 'change', renderOptionsList);
@@ -1982,6 +2003,7 @@ export function initApp() {
   sortAllSelects();
   // Display initial last updated time
   updateLastUpdatedDisplay();
+  updateRecentButtonState();
   // 3-day automatic local backup snapshots
   maybeRunAutoBackup(buildPayload(), 'startup');
   // Update the relative time display every minute

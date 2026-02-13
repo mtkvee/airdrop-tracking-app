@@ -116,10 +116,7 @@ export default function HomePage() {
               </button>
             </div>
           </div>
-          <div className="header-helper-text">
-            Add Options in Manage, Add Airdrops, Use search, filters, and
-            sorting.
-          </div>
+          <div className="header-helper-text">Add, Track & Manage Airdrops</div>
           <div className="header-filters">
             <div className="search-wrap">
               <i className="fas fa-search search-icon"></i>
@@ -130,34 +127,17 @@ export default function HomePage() {
                 id="searchInput"
               />
             </div>
-            <div className="filter-bar">
-              <button
-                type="button"
-                className="btn-remove-filters"
-                id="removeFiltersBtn"
-                aria-label="Remove filters"
-                title="Remove filters"
-              >
-                <i className="fa-solid fa-filter-circle-xmark"></i>
-              </button>
-            </div>
-            <div className="tabs">
-              <button type="button" className="tab tab-active" data-tab="all">
-                All
-              </button>
-              <button type="button" className="tab" data-tab="newTasks">
-                New
-              </button>
-            </div>
           </div>
         </header>
 
         <main className="main">
           <div className="last-updated-section" id="lastUpdatedSection">
-            <i className="fas fa-sync-alt last-updated-icon"></i>
-            <span className="last-updated-text">
-              Last updated: <span id="lastUpdatedTime">Just now</span>
-            </span>
+            <div className="last-updated-status">
+              <i className="fas fa-sync-alt last-updated-icon"></i>
+              <span className="last-updated-text">
+                Last updated: <span id="lastUpdatedTime">Just now</span>
+              </span>
+            </div>
             <div className="counter-row">
               <div className="task-count-dropdown" id="taskCountDropdown">
                 <button
@@ -206,6 +186,28 @@ export default function HomePage() {
                   id="statusCountMenu"
                   role="listbox"
                 ></div>
+              </div>
+              <div className="counter-tools">
+                <div className="filter-bar">
+                  <button
+                    type="button"
+                    className="btn-recent"
+                    id="recentBtn"
+                    aria-label="Toggle recent view"
+                    title="Recent"
+                  >
+                    Recent
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-remove-filters"
+                    id="removeFiltersBtn"
+                    aria-label="Remove filters"
+                    title="Remove filters"
+                  >
+                    <i className="fa-solid fa-filter-circle-xmark"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
