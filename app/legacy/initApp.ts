@@ -982,6 +982,23 @@ export function initApp() {
     setModalState($manageOptionsModal, false);
   }
 
+  function persistCustomOptionsForSelect(selectEl) {
+    if (!selectEl || !selectEl.id) return;
+    var id = selectEl.id;
+    var arr = Array.from(selectEl.options)
+      .filter(function (o) { return o.value !== ''; })
+      .map(function (o) { return { value: o.value, text: o.text }; });
+    arr.sort(function (a, b) {
+      return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' });
+    });
+    CUSTOM_OPTIONS[id] = arr;
+    saveToLocalStorage();
+    syncFilterOptionsWithForm();
+    try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch (e) {}
+    refreshExtraLinkTypeSelects();
+    applyFiltersFromState();
+  }
+
   function openResetOptionsConfirmModal() {
     setModalState($resetOptionsConfirmModal, true);
   }
@@ -1060,7 +1077,9 @@ export function initApp() {
           var foundIndex = opts.findIndex(function(o) { return o.value === val; });
           if (foundIndex >= 0) {
             manageOptionsCurrentSelect.remove(foundIndex);
+            persistCustomOptionsForSelect(manageOptionsCurrentSelect);
             renderOptionsList();
+            setAuthStatus('Option removed', 'success', true);
           }
         }
       });
@@ -1095,24 +1114,11 @@ export function initApp() {
       if (opt) {
         opt.value = newValue;
         opt.text = newText;
-        
-        // Update CUSTOM_OPTIONS immediately to sync with storage
-        var id = manageOptionsCurrentSelect.id;
-        if (CUSTOM_OPTIONS && CUSTOM_OPTIONS[id]) {
-          var idx = CUSTOM_OPTIONS[id].findIndex(function(o) { return o.value === editOptionCurrentValue; });
-          if (idx >= 0) {
-            CUSTOM_OPTIONS[id][idx].value = newValue;
-            CUSTOM_OPTIONS[id][idx].text = newText;
-          }
-        }
-        
-        // Refresh custom widgets and re-render table
-        try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
-        refreshExtraLinkTypeSelects();
-        applyFiltersFromState(); // Re-render table to show updated option names
+        persistCustomOptionsForSelect(manageOptionsCurrentSelect);
         
         renderOptionsList(); // Re-render options list to show changes
         closeEditOptionModal();
+        setAuthStatus('Option updated', 'success', true);
       }
     }
   }
@@ -1841,25 +1847,17 @@ export function initApp() {
       option.value = value;
       option.text = text;
       manageOptionsCurrentSelect.appendChild(option);
+      persistCustomOptionsForSelect(manageOptionsCurrentSelect);
       $newOptionValue.value = '';
       $newOptionText.value = '';
       renderOptionsList();
+      setAuthStatus('Option added', 'success', true);
     }
   });
   on($manageOptionsSave, 'click', function(e) {
     e.preventDefault();
     if (manageOptionsCurrentSelect) {
-      var id = manageOptionsCurrentSelect.id;
-      var arr = Array.from(manageOptionsCurrentSelect.options).filter(function(o){ return o.value !== ''; }).map(function(o){ return { value: o.value, text: o.text }; });
-      // sort new options alphabetically A->Z by display text
-      arr.sort(function(a,b){ return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' }); });
-      CUSTOM_OPTIONS[id] = arr;
-      saveToLocalStorage();
-      syncFilterOptionsWithForm();
-      // Refresh custom widgets and re-render table with updated options
-      try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch(e) {}
-      refreshExtraLinkTypeSelects();
-      applyFiltersFromState(); // Update table display with new option values
+      persistCustomOptionsForSelect(manageOptionsCurrentSelect);
       setAuthStatus('Changed options', 'success', true);
     }
     closeManageOptionsModal();
