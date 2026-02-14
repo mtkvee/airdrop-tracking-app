@@ -218,7 +218,7 @@ export default function HomePage() {
                   <th className="col-name sortable" data-sort="name">
                     Name <i className="fas fa-sort"></i>
                   </th>
-                  <th className="col-task sortable" data-sort="task">
+                  <th className="col-task sortable" data-sort="taskType">
                     Task
                   </th>
                   <th className="col-tasktype sortable" data-sort="connectType">
@@ -227,7 +227,7 @@ export default function HomePage() {
                   <th className="col-status sortable" data-sort="status">
                     Status
                   </th>
-                  <th className="col-reward sortable" data-sort="reward">
+                  <th className="col-reward sortable" data-sort="rewardType">
                     Reward
                   </th>
                   <th className="col-actions col-header-center">Actions</th>

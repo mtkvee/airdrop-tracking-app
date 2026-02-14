@@ -9,6 +9,7 @@ import { normalizeSideLinks, toRenderableSideLinks } from './sideLinks';
 import { STATUS_CONFIG, MANAGED_SELECT_IDS, SORTABLE_SELECT_IDS, MULTI_SELECT_IDS, DEFAULT_OPTIONS_BY_SELECT } from './constants';
 import { projectToFormData, formDataToProject, hasProjectDuplicate } from './projectHelpers';
 import { validateProjectLinks } from './validation';
+import { compareProjectValues, parseImportPayload } from './regressions';
 
 export function initApp() {
   'use strict';
@@ -83,6 +84,14 @@ export function initApp() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const data = JSON.parse(raw);
+      const savedAt = data && data.savedAt ? Number(data.savedAt) : 0;
+      if (savedAt && Date.now() - savedAt > STORAGE_EXPIRY_MS) {
+        CUSTOM_OPTIONS = {};
+        LAST_UPDATED_AT = 0;
+        LAST_AUTO_BACKUP_AT = 0;
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        return [];
+      }
       if (data && data.customOptions) {
         try { CUSTOM_OPTIONS = data.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
       }
@@ -93,8 +102,6 @@ export function initApp() {
         LAST_AUTO_BACKUP_AT = Number(data.lastAutoBackupAt) || 0;
       }
       const list = Array.isArray(data) ? data : (data.projects || []);
-      const savedAt = data.savedAt || 0;
-      if (savedAt && Date.now() - savedAt > STORAGE_EXPIRY_MS) return [];
       return normalizeProjects(list);
     } catch (e) {
       return [];
@@ -613,11 +620,14 @@ export function initApp() {
 
   function renderProjectRow(p) {
     const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.potential;
-    const taskTypeDisplay = (p.taskType && p.taskType.length) ? p.taskType.map(function(t){ return String(t).charAt(0).toUpperCase() + String(t).slice(1); }).join(', ') : '';
+    const taskTypeDisplay = (p.taskType && p.taskType.length) ? p.taskType.map(function(t){
+      const txt = getOptionTextBySelect('airdropTaskType', t);
+      return txt || String(t || '');
+    }).join(', ') : '';
     const connectTypeDisplay = (p.connectType && p.connectType.length) ? p.connectType.map(function(c){
       // Use the display text from the form select if available to preserve casing
       const txt = getOptionTextBySelect('airdropConnectType', c);
-      return txt || String(c).toUpperCase();
+      return txt || String(c || '');
     }).join(', ') : '';
     
     // Get status label from select options (respects custom edits)
@@ -748,19 +758,7 @@ export function initApp() {
 
   function sortProjects() {
     filteredProjects.sort(function (a, b) {
-      let va = a[sortKey];
-      let vb = b[sortKey];
-      if (sortKey === 'name' || sortKey === 'code') {
-        va = (va || '').toLowerCase();
-        vb = (vb || '').toLowerCase();
-        return sortDir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
-      }
-      if (sortKey === 'status' || sortKey === 'reward') {
-        va = (va || '').toLowerCase();
-        vb = (vb || '').toLowerCase();
-        return sortDir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
-      }
-      return 0;
+      return compareProjectValues(a, b, sortKey, sortDir);
     });
   }
 
@@ -1022,6 +1020,8 @@ export function initApp() {
       return String(a.text).localeCompare(String(b.text), 'en', { sensitivity: 'base' });
     });
     CUSTOM_OPTIONS[id] = arr;
+    // Keep the live select sorted immediately so custom widgets reflect order without refresh.
+    sortSelectElement(id);
     saveToLocalStorage();
     syncFilterOptionsWithForm();
     try { if (typeof refreshCustomMultiSelects === 'function') refreshCustomMultiSelects(); } catch (e) {}
@@ -1530,23 +1530,30 @@ export function initApp() {
   }
 
   function importData(parsed) {
-    const list = Array.isArray(parsed) ? parsed : (parsed && parsed.projects) ? parsed.projects : [];
+    const importPayload = parseImportPayload(parsed);
+    const list = importPayload.projects;
     // import custom options if present
-    if (parsed && parsed.customOptions) {
-      try { CUSTOM_OPTIONS = parsed.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
+    if (importPayload.customOptions) {
+      try { CUSTOM_OPTIONS = importPayload.customOptions || {}; } catch (e) { CUSTOM_OPTIONS = {}; }
     }
     // import lastUpdatedAt if present
-    if (parsed && parsed.lastUpdatedAt) {
-      LAST_UPDATED_AT = parsed.lastUpdatedAt;
+    if (importPayload.lastUpdatedAt) {
+      LAST_UPDATED_AT = importPayload.lastUpdatedAt;
     }
-    if (!list.length) return;
-    PROJECTS = normalizeProjects(list);
+    if (list.length) {
+      PROJECTS = normalizeProjects(list);
+    }
+    if (!importPayload.hasImportedContent) {
+      setAuthStatus('No importable data found in file.', 'error', true);
+      return;
+    }
     // apply custom options to selects then persist
     initCustomOptions();
     syncFilterOptionsWithForm();
     updateLastUpdatedDisplay();
     saveToLocalStorage();
     applyFiltersFromState();
+    setAuthStatus('Import completed', 'success', true);
   }
 
   function handleImportFile(e) {
@@ -1569,6 +1576,15 @@ export function initApp() {
   function createOrUpdateCustomMultiSelect(id) {
     var sel = byId(id);
     if (!sel || !sel.multiple) return; // Only for multiple selects
+
+    if (sel.__cmsChangeHandler) {
+      try { sel.removeEventListener('change', sel.__cmsChangeHandler); } catch (e) {}
+      sel.__cmsChangeHandler = null;
+    }
+    if (sel.__cmsDocClickHandler) {
+      try { document.removeEventListener('click', sel.__cmsDocClickHandler); } catch (e) {}
+      sel.__cmsDocClickHandler = null;
+    }
     
     // remove previous widget if present
     var existing = sel.parentNode.querySelector('.custom-multiselect[data-select-id="' + id + '"]');
@@ -1673,15 +1689,19 @@ export function initApp() {
     });
 
     // when underlying select changes (external updates), rebuild and update
-    sel.addEventListener('change', function(){ rebuild(); updateDisplay(); });
+    var changeHandler = function(){ rebuild(); updateDisplay(); };
+    sel.addEventListener('change', changeHandler);
+    sel.__cmsChangeHandler = changeHandler;
 
     // close on outside click
-    document.addEventListener('click', function closeHandler(){
+    var closeHandler = function() {
       if (wrapper.classList.contains('open')) {
         wrapper.classList.remove('open');
         dropdown.style.display = 'none';
       }
-    });
+    };
+    document.addEventListener('click', closeHandler);
+    sel.__cmsDocClickHandler = closeHandler;
 
     // insert after select
     sel.parentNode.insertBefore(wrapper, sel.nextSibling);
